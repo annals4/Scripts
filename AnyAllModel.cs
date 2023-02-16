@@ -61,6 +61,7 @@ namespace AB.AnyAllModel
         {
             public string Name;
             public List<FSMAction> ActionsOnEntry;
+            public List<FSMAction> ActionsOnExit;
             public List<FSMTransition> ListOfTransitions;
 
             public bool InitialState;

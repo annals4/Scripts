@@ -208,7 +208,15 @@ namespace AB.FSMManager
                         foreach (var actionEntry in state.ActionsOnEntry)
                         {
                             builder.In(state.Name)
-                                    .ExecuteOnEntry(() => SwitchTarget(actionEntry, state));
+                                    .ExecuteOnEntry(() => StateActions(actionEntry, state));
+                        }
+                    }
+                    if(state.ActionsOnExit.Count != 0)
+                    {
+                        foreach (var actionExit in state.ActionsOnExit)
+                        {
+                            builder.In(state.Name)
+                                    .ExecuteOnExit(() => StateActions(actionExit, state));
                         }
                     }
                     if (state.ListOfTransitions.Count != 0)
@@ -217,7 +225,7 @@ namespace AB.FSMManager
                         {
                             builder.In(state.Name)
                             .On(transition.Name)
-                                .If(() => CheckExternalCondition(transition.ExternalCondition)).Execute().Goto(transition.NextState);
+                                .If(() => CheckExternalCondition(transition.ExternalCondition)).Goto(transition.NextState);
                         }
                     }
                     if (state.InitialState == true)
@@ -254,12 +262,13 @@ namespace AB.FSMManager
 
         //begin function section 
 
+
         /// <summary>
         /// Funzione che si occupa di triggerare le azioni che si hanno nel momento in cui si entra in uno stato 
         /// </summary>
         /// <param name="actionEntry"></param>
         /// <param name="state"></param>
-        public void SwitchTarget(FSMAction actionEntry, FSMState state)
+        public void StateActions(FSMAction action, FSMState state)
         {
             initialTime = currentTime; //istante in cui entro nello stato
             currentState = state;
@@ -268,22 +277,22 @@ namespace AB.FSMManager
 
             tempTrigg = temporalTrigger.Info(currentState).isPres;//se isPres è true significa che nello stato sono presenti delle transizioni che sono trigger temporali 
 
-            if (actionEntry.fsmAction != null) 
+            if (action.fsmAction != null) 
             {
-                var t = actionEntry.Target.Split(':');
+                var t = action.Target.Split(':');
                 var target = t[0];
                 var excluded = t.Length > 1 ? t[1] : null;
                 switch (target)
                 {
                     case "ALL": //tutti gli oggetti
-                        switch (actionEntry.TargetType)
+                        switch (action.TargetType)
                         {
                             case "ManipulableObject":
                                 foreach (var obj in instatiator.ManipulableObject)
                                 {
                                     if (!obj.name.Equals(excluded) && !obj.tag.Equals(excluded)) //check se l'oggetto è escluso o meno
                                     {
-                                        SwitchAction(actionEntry, obj);
+                                        SwitchAction(action, obj);
                                     }
                                 }
                                 break;
@@ -292,7 +301,7 @@ namespace AB.FSMManager
                                 {
                                     if (!obj.name.Equals(excluded) && !obj.tag.Equals(excluded))
                                     {
-                                        SwitchAction(actionEntry, obj);
+                                        SwitchAction(action, obj);
                                     }
                                 }
                                 break;
@@ -301,7 +310,7 @@ namespace AB.FSMManager
                                 {
                                     if (!obj.name.Equals(excluded) && !obj.tag.Equals(excluded))
                                     {
-                                        SwitchAction(actionEntry, obj);
+                                        SwitchAction(action, obj);
                                     }
                                 }
                                 break;
@@ -311,7 +320,7 @@ namespace AB.FSMManager
                         break;
                     case "ANY"://un target qualsiasi
                         Random R = new();
-                        switch (actionEntry.TargetType)
+                        switch (action.TargetType)
                         {
                             case "ManipulableObject":
                                 int rand = R.Next(0, instatiator.ManipulableObject.Count()); //rand è un numero randomico tra gli indici della lista di oggetti Manipulable
@@ -326,7 +335,7 @@ namespace AB.FSMManager
                                         break; //timeout nel caso in cui il target sia un manipulableobject ma non ne trovo nessuno
                                     }
                                 } 
-                                SwitchAction(actionEntry, mn);
+                                SwitchAction(action, mn);
                                 break;
                             case "ButtonObject":
                                 int rand2 = R.Next(0, instatiator.ButtonObject.Count());
@@ -341,7 +350,7 @@ namespace AB.FSMManager
                                         break; //timeout nel caso in cui il target sia un manipulableobject ma non ne trovo nessuno
                                     }
                                 } 
-                                SwitchAction(actionEntry, bt);
+                                SwitchAction(action, bt);
                                 break;
                             case "TriggerObject":
                                 int rand3 = R.Next(0, instatiator.TriggerObject.Count());
@@ -356,7 +365,7 @@ namespace AB.FSMManager
                                         break; //timeout nel caso in cui il target sia un manipulableobject ma non ne trovo nessuno
                                     }
                                 }
-                                SwitchAction(actionEntry, btr);
+                                SwitchAction(action, btr);
                                 break;
                             default:
                                 break;
@@ -369,21 +378,21 @@ namespace AB.FSMManager
                             {
                                 if (!o.name.Equals(excluded) && o.CompareTag(target))
                                 {
-                                    SwitchAction(actionEntry, o);
+                                    SwitchAction(action, o);
                                 }
 
                             }
                         }
                         else //singolo gameobject
                         {
-                            switch (actionEntry.TargetType)
+                            switch (action.TargetType)
                             {
                                 case "ManipulableObject":
                                     foreach (var o in instatiator.ManipulableObject)
                                     {
                                         if (o.name.Equals(target))
                                         {
-                                            SwitchAction(actionEntry, o);
+                                            SwitchAction(action, o);
                                         }
                                     }
                                     break;
@@ -392,7 +401,7 @@ namespace AB.FSMManager
                                     {
                                         if (o.name.Equals(target))
                                         {
-                                            SwitchAction(actionEntry, o);
+                                            SwitchAction(action, o);
                                         }
                                     }
                                     break;
@@ -401,7 +410,7 @@ namespace AB.FSMManager
                                     {
                                         if (o.name.Equals(target))
                                         {
-                                            SwitchAction(actionEntry, o);
+                                            SwitchAction(action, o);
                                         }
                                     }
                                     break;
