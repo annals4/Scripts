@@ -217,7 +217,7 @@ namespace AB.FSMManager
                         {
                             builder.In(state.Name)
                             .On(transition.Name)
-                                .If(() => CheckExternalCondition(transition.ExternalCondition)).Goto(transition.NextState);
+                                .If(() => CheckExternalCondition(transition.ExternalCondition)).Execute().Goto(transition.NextState);
                         }
                     }
                     if (state.InitialState == true)
