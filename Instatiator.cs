@@ -31,7 +31,7 @@ namespace AB.Instatiator
 
         private void Awake()
         {
-            FSM json = ParseJson("/Resources/Json/Manipulable.json");
+            FSM json = ParseJson("/Resources/Json/Allocate.json");
             Instance = this;
 
             CheckMaterialCoherence(json);
@@ -57,6 +57,7 @@ namespace AB.Instatiator
                 o.name = obj.ObjectName;
                 o.transform.localScale = new Vector3(obj.Scale.x, obj.Scale.y, obj.Scale.z);
                 o.tag = obj.Tag;
+                o.SetActive(false);
 
                 switch (obj.Type)
                 {

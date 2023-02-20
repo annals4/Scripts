@@ -61,7 +61,7 @@ namespace AB.ActionManager
         /// <param name="obj"></param>
         public void ActionSetting(SettingType setting, FSMTransition transition, GameObject obj, string flag)
         {
-            string objId = obj.name;
+            string objId = obj.name;   
             switch (setting)
             {
                 case SettingType.AND:///////////tutte le azioni di una transizione devono aver avuto luogo
@@ -383,8 +383,8 @@ namespace AB.ActionManager
                             case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
                                 HeadController.HeadController.Instance.InTrigger(action, transition, obj);
                                 break;
-                            case ("MoveCubeDown", "Grabbed"):
-                            case ("MoveCubeUp", "Grabbed"):
+                            case ("Grabbed", "MoveSolidDown"):
+                            case ("Grabbed", "MoveSolidUp"):
                                 ManipulableManager.ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
                                 //chiamo procedura per il grab
                                 break;

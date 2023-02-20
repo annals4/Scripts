@@ -58,14 +58,14 @@ namespace AB.ManipulableManager
                 {
                     switch (action.fsmAction)
                     {
-                        case "MoveCubeDown":
+                        case "MoveSolidDown":
                             //da gestire i vari casi (attenzione al flip che fa in 0, dove passa a negativo)
                             if (obj.name == action.Target && (startGrab[obj.name].y-rPoint.y > 0.1))
                             {
                                 firedTransition = transition.Name;
                             }
                             break;
-                        case "MoveCubeUp":
+                        case "MoveSolidUp":
                             if (obj.name == action.Target && (rPoint.y-startGrab[obj.name].y > 0.1))
                             {
                                 firedTransition = transition.Name;
@@ -91,13 +91,13 @@ namespace AB.ManipulableManager
             {
                 switch (action.fsmAction)
                 {
-                    case "MoveCubeUp":
+                    case "MoveSolidUp":
                         if (obj.name == action.Target && (rPoint.y - startGrab[obj.name].y > 0.1)) //se si verifica la condizione di grab detta dall'azione posso fare un check se triggerarla
                         {
                             TargetSetting(transition, action, obj, tar, excluded, startGrab, rPoint); //SETTA TRUE sull'azione triggerata
                         }
                         break;
-                    case "MoveCubeDown":
+                    case "MoveSolidDown":
                         if (obj.name == action.Target && (startGrab[obj.name].y - rPoint.y > 0.1))
                         {
                             TargetSetting(transition, action, obj, tar, excluded, startGrab, rPoint); //SETTA TRUE sull'azione triggerata
@@ -113,13 +113,13 @@ namespace AB.ManipulableManager
             {
                 switch (action.fsmAction)
                 {
-                    case "MoveCubeUp":
+                    case "MoveSolidUp":
                         if (obj.name == action.Target && (rPoint.y - startGrab[obj.name].y > 0.1))
                         {
                             action.Triggered = true;
                         }
                         break;
-                    case "MoveCubeDown":
+                    case "MoveSolidDown":
                         if (obj.name == action.Target && (startGrab[obj.name].y - rPoint.y > 0.1))
                         {
                             action.Triggered = true;

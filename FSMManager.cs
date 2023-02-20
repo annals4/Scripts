@@ -52,7 +52,7 @@ namespace AB.FSMManager
             headController = HeadController.HeadController.Instance;
 
 
-            fsm = ParseJson("/Resources/Json/Manipulable.json"); //Insert the path of the Json that you want to parse
+            fsm = ParseJson("/Resources/Json/Allocate.json"); //Insert the path of the Json that you want to parse
             tags = GetTags(fsm.ListOfObjects);
 
             InitializeFSM(fsm);
@@ -208,7 +208,8 @@ namespace AB.FSMManager
                         foreach (var actionEntry in state.ActionsOnEntry)
                         {
                             builder.In(state.Name)
-                                    .ExecuteOnEntry(() => StateActions(actionEntry, state));
+                                    .ExecuteOnEntry(() => StateActions(actionEntry, state))
+                                    .ExecuteOnEntry(()=> InteractController.Instance.Listeners());
                         }
                     }
                     if(state.ActionsOnExit.Count != 0)
@@ -216,7 +217,7 @@ namespace AB.FSMManager
                         foreach (var actionExit in state.ActionsOnExit)
                         {
                             builder.In(state.Name)
-                                    .ExecuteOnExit(() => StateActions(actionExit, state));
+                                    .ExecuteOnExit(() => StateActions(actionExit, state)); //inserito per includere gli effetti delle azioni che si effettuano in uscita dallo stato in cui ci si trova
                         }
                     }
                     if (state.ListOfTransitions.Count != 0)
@@ -273,7 +274,7 @@ namespace AB.FSMManager
             initialTime = currentTime; //istante in cui entro nello stato
             currentState = state;
 
-            ConflictDetector(state); //check se all'interno di uno stato ci sono stessi target per azioni diverse (conflitto)
+            //ConflictDetector(state); //check se all'interno di uno stato ci sono stessi target per azioni diverse (conflitto)
 
             tempTrigg = temporalTrigger.Info(currentState).isPres;//se isPres è true significa che nello stato sono presenti delle transizioni che sono trigger temporali 
 
@@ -432,6 +433,12 @@ namespace AB.FSMManager
                     break;
                 case "TurnRed":
                     target.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
+                    break;
+                case "SetActive":
+                    target.SetActive(true);
+                    break;
+                case "SetInactive":
+                    target.SetActive(false);
                     break;
                 default:
                     break;
