@@ -80,9 +80,13 @@ namespace AB.ActionManager
                             case ("Hand","TouchCube"): //ho chiamato il metodo toccando un oggetto
                                 CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
                                 break;
-                            case ("EnterTrigger","InTrigger"): //chiamo quando entro in un qualche zona trigger
-                            case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
+                            case ("InTrigger", "EnterTrigger"): //chiamo quando entro in un qualche zona trigger
+                            case ("OutTrigger", "ExitTrigger"): //chiamo quando esco da qualche zona trigger
                                 HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                break;
+                            //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
+                            case ("InTrigger", "TriggerCollision"):
+                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
                                 break;
                             default:
                                 break;
@@ -163,9 +167,13 @@ namespace AB.ActionManager
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
                                 CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
                                 break;
-                            case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
-                            case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
+                            case ("InTrigger", "EnterTrigger"): //chiamo quando entro in un qualche zona trigger
+                            case ("OutTrigger", "ExitTrigger"): //chiamo quando esco da qualche zona trigger
                                 HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                break;
+                            //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
+                            case ("InTrigger", "TriggerCollision"):
+                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
                                 break;
                             default:
                                 break;
@@ -240,9 +248,13 @@ namespace AB.ActionManager
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
                                 CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
                                 break;
-                            case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
-                            case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
+                            case ("InTrigger", "EnterTrigger"): //chiamo quando entro in un qualche zona trigger
+                            case ("OutTrigger", "ExitTrigger"): //chiamo quando esco da qualche zona trigger
                                 HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                break;
+                            //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
+                            case ("InTrigger", "TriggerCollision"):
+                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
                                 break;
                             default:
                                 break;
@@ -519,7 +531,6 @@ namespace AB.ActionManager
                         //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
                         switch ((flag, action.fsmAction)) //collego azione chiamante e azione effettuata
                         {
-                            //guarda appunti su docs
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
                                 ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
                                 break;

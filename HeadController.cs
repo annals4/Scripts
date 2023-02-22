@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static AB.AnyAllModel.FSM;
+using static AB.FSMManager.FSMManager;
+
 
 namespace AB.HeadController
 {
@@ -81,7 +83,7 @@ namespace AB.HeadController
 
 
 
-
+        //CASO1: Entro in una zona trigger con la testa e si scatena la transizione (azione: TriggerCollision)
         public void HeadAction(FSMAction action, FSMTransition transition, GameObject obj)
         {
             var t = action.Target.Split(':');
@@ -177,9 +179,9 @@ namespace AB.HeadController
 
 
         }
+        
 
-
-        //caso in cui entro in una zona trigger e si scatena un azione sino a quando non esco
+        //CASO2: in cui entro in una zona trigger e si scatena un azione sino a quando non esco (accoppiare le azioni di EnterTrigger con ExitTrigger)
         public void InTrigger(FSMAction action, FSMTransition transition, GameObject obj)
         {
             var t = action.Target.Split(':');
@@ -187,6 +189,7 @@ namespace AB.HeadController
             var excluded = t.Length > 1 ? t[1] : null;
 
             //PASSO 1: DISTINGUO IL CASO IN BASE AL TARGET
+            //non ha senso entrare in tutte le zone trigger, forse
             if (tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
             {
                 InSetting(transition, action, obj, tar, excluded); //SETTA TRUE sull'azione triggerata
@@ -223,6 +226,8 @@ namespace AB.HeadController
 
 
         }
+
+        
 
         public void GlobalReset()
         {

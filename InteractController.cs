@@ -26,32 +26,39 @@ namespace AB.Interactor
             FSM json = ParseJson("/Resources/Json/Allocate.json");
             instatiator = Instatiator.Instatiator.Instance;
 
-            //popolo le varie liste
-            /*
-            foreach (var obj in json.ListOfObjects)
-            {
-                switch (obj.Type)
-                {
-                    case "ButtonObject":
-                        interactables.Add(obj.ObjectName);
-                        break;
-                    case "ManipulableObject":
-                        manipulable.Add(obj.ObjectName); 
-                        break;
-                    default:
-                        break;
-                }
-            }*/
+            
 
         }
             //problema in listeners: esiste un bottone ma non è attivo, quindi non si riesce a trovare sulla scena
             //trovata forse soluzione, ma mi sa che devo richiamare questa cosa ogni volta che entro in una nuova scena, e penso che quindi dovrò fare una nuova funzione e richiamarla mano a mano
             
             
-         public void Listeners()
+         public void AddListener(GameObject o)
          {
             //**************************************LISTENERS******************************************
 
+            if(o.GetComponent<PressableButtonHoloLens2>()!=null) //quindi si tratta di un bottone
+            {
+                o.GetComponent<Interactable>().OnClick
+                        .AddListener(() => {
+                            ButtonClick?.Invoke(o);
+                            //TODO MANDARE REMOTO
+                        });
+            }
+            else if (o.GetComponent<ObjectManipulator>() != null && o.GetComponent<NearInteractionGrabbable>() != null)
+            {
+                o.GetComponent<ObjectManipulator>().OnManipulationStarted.AddListener((ManipulationEventData args) =>
+                {
+                    GrabbedObj?.Invoke(o, args.PointerCentroid); //notifies when an object is grabbed
+                                                                   //da vedere se args può essere utile
+
+                });
+                o.GetComponent<ObjectManipulator>().OnManipulationEnded.AddListener((ManipulationEventData args) =>
+                {
+                    ReleasedGrabbedObj?.Invoke(o, args.PointerCentroid); //notifies when an object is released
+                });
+            }
+            /*
             //Listener ButtonClick
             foreach (var I in instatiator.ButtonObject)
             {
@@ -65,7 +72,7 @@ namespace AB.Interactor
                         });
                 }
             }
-
+            
             //Listener Grab
             foreach (var M in instatiator.ManipulableObject)
             {
@@ -85,7 +92,33 @@ namespace AB.Interactor
                 }
 
             }
+            */
          }
+
+        public void RemoveListener(GameObject o)
+        {
+            if (o.GetComponent<PressableButtonHoloLens2>() != null) //quindi si tratta di un bottone
+            {
+                o.GetComponent<Interactable>().OnClick
+                        .RemoveListener(() => {
+                            ButtonClick?.Invoke(o);
+                            //TODO MANDARE REMOTO
+                        });
+            }
+            else if (o.GetComponent<ObjectManipulator>() != null && o.GetComponent<NearInteractionGrabbable>() != null)
+            {
+                o.GetComponent<ObjectManipulator>().OnManipulationStarted.RemoveListener((ManipulationEventData args) =>
+                {
+                    GrabbedObj?.Invoke(o, args.PointerCentroid); //notifies when an object is grabbed
+                                                                 //da vedere se args può essere utile
+
+                });
+                o.GetComponent<ObjectManipulator>().OnManipulationEnded.RemoveListener((ManipulationEventData args) =>
+                {
+                    ReleasedGrabbedObj?.Invoke(o, args.PointerCentroid); //notifies when an object is released
+                });
+            }
+        }
           
             
             

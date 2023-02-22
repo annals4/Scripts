@@ -77,7 +77,7 @@ namespace AB.CollisionController
             
         }
 
-        
+        /*
         public string CollisionTrigger(GameObject obj, FSMState currentState)
         {
             firedTransition = null;
@@ -173,6 +173,7 @@ namespace AB.CollisionController
             }
 
         }
+        */
 
         /// <summary>
         /// Il target può essere:

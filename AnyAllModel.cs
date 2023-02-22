@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using UnityEditor.Media;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -15,6 +16,7 @@ namespace AB.AnyAllModel
         public string FSMName;
         public List<FSMObj> ListOfObjects;
         public string[] ListOfMaterials;
+        public List<Media> ListOfMedia;
         public List<FSMState> ListOfStates;
 
         [Serializable]
@@ -45,6 +47,13 @@ namespace AB.AnyAllModel
             public float z;
         }
         */
+
+        [Serializable]
+        public class Media
+        {
+            public string Name;
+            public string Path;
+        }
 
 
         [Serializable]

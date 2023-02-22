@@ -18,13 +18,18 @@ namespace AB.Instatiator
         public GameObject SquareButtonPrefab;
         public GameObject CubePrefab;
         public GameObject SpherePrefab;
+        public GameObject EmptyPrefab;
 
         private GameObject o;
+        private AudioClip a;
 
         public List<GameObject> ButtonObject  = new List<GameObject>();
         public List<GameObject> ManipulableObject = new List<GameObject>();
         public List<GameObject> SceneObject = new List<GameObject>();
         public List<GameObject> TriggerObject = new List<GameObject>();
+        public List<GameObject> AnimationObject = new List<GameObject>();
+        public List<AudioClip> AudioObject = new List<AudioClip>();
+        public AudioSource audioSource = new AudioSource();
         public static Instatiator Instance { get; private set; }
 
         //TODO: capire se si possono aggiungere tag a runtime nel progetto
@@ -50,6 +55,10 @@ namespace AB.Instatiator
                         break;
                     case "SphereObject":
                         o = Instantiate(SpherePrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.identity);
+                        break;
+                    //con il caso "Animation" carico un gameobject vuoto che poi nel momento in cui lo devo attivare sarà chiamato anche LoadGltfBinaryFromMemory();
+                    case "AnimationObject":
+                        o = Instantiate(EmptyPrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.identity);
                         break;
                     default:
                         break;
@@ -81,13 +90,31 @@ namespace AB.Instatiator
                     case "ButtonObject":
                         ButtonObject.Add(o);
                         break;
+                    case "AnimationObject":
+                        AnimationObject.Add(o);
+                        break;
                     default:
                         break;
                 }
                 SceneObject.Add(o); 
+
                 
+            }
+            //alloca AudioClip
+            foreach(var aud in json.ListOfMedia)
+            {
+                //creo l'audioclip
+                a = Resources.Load<AudioClip>(aud.Path); //aud è il path dell'audio che carico
+                a.name = aud.Name;
+                AudioObject.Add(a);
+                //creo l'oggetto che mi contiene l'audio source
+                o = Instantiate(EmptyPrefab, new Vector3(0,0,0), Quaternion.identity);
+                o.AddComponent<AudioSource>();
+                audioSource = o.GetComponent<AudioSource>();
 
             }
+
+
         }
 
         public void CheckMaterialCoherence(FSM json) //verifica se i materiali degli oggetti esistono nella lista

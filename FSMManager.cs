@@ -7,12 +7,15 @@ using System;
 using FSM = AB.AnyAllModel.FSM;
 using AB.Interactor;
 using AB.Instatiator;
+using AB.FSMAnimator;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using Random = System.Random;
 using UnityEngine.UIElements;
 using System.Collections;
+using Microsoft.MixedReality.Toolkit;
+using System.Threading;
 
 namespace AB.FSMManager
 {
@@ -118,7 +121,7 @@ namespace AB.FSMManager
             
         }
 
-        public void OnHandTrigger(GameObject obj) //chiamato ogni volta che si clicca un oggetto 
+        public void OnHandTrigger(GameObject obj) //chiamato ogni volta che si tocca un oggetto 
         {
             
             string transitionFired = ActionManager.ActionManager.Instance.TransitionTrigger(obj, currentState, "Hand");
@@ -134,7 +137,7 @@ namespace AB.FSMManager
 
         private void OnHeadTriggerEnter(GameObject obj) //chiamato ogni volta che la testa collide con qualcosa
         {
-            string transitionFired = ActionManager.ActionManager.Instance.TransitionTrigger(obj, currentState, "EnterTrigger");
+            string transitionFired = ActionManager.ActionManager.Instance.TransitionTrigger(obj, currentState, "InTrigger");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);
@@ -144,7 +147,7 @@ namespace AB.FSMManager
 
         private void OnHeadTriggerExit(GameObject obj) //chiamato ogni volta che termina la collisione della testa
         {
-            string transitionFired = ActionManager.ActionManager.Instance.TransitionTrigger(obj, currentState, "ExitTrigger");
+            string transitionFired = ActionManager.ActionManager.Instance.TransitionTrigger(obj, currentState, "OutTrigger");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);
@@ -208,8 +211,8 @@ namespace AB.FSMManager
                         foreach (var actionEntry in state.ActionsOnEntry)
                         {
                             builder.In(state.Name)
-                                    .ExecuteOnEntry(() => StateActions(actionEntry, state))
-                                    .ExecuteOnEntry(()=> InteractController.Instance.Listeners());
+                                    .ExecuteOnEntry(() => StateActions(actionEntry, state));
+                                    //.ExecuteOnEntry(()=> InteractController.Instance.Listeners());
                         }
                     }
                     if(state.ActionsOnExit.Count != 0)
@@ -415,11 +418,55 @@ namespace AB.FSMManager
                                         }
                                     }
                                     break;
+                                case "AnimationObject":
+                                    foreach (var o in instatiator.AnimationObject)
+                                    {
+                                        if (o.name.Equals(target))
+                                        {
+                                            SwitchAction(action, o);
+                                        }
+                                    }
+                                    break;
                                 default:
                                     break;
                             }
                         }
                         break;
+                }
+                //questi if sotto li posso unire allo switch sopra
+                if (action.TargetType.Equals("AnimationObject"))
+                {   
+                    
+                    foreach(var obj in fsm.ListOfObjects)
+                    {
+                        if(obj.Type.Equals("AnimationObject") && obj.ObjectName.Equals(target))
+                        {
+                            foreach (var o in instatiator.AnimationObject)
+                            {
+                                if (o.name.Equals(target))
+                                {
+                                    StartAnimation(o, obj.Material);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    
+
+                    
+                }
+                if (action.TargetType.Equals("Audio"))
+                {
+                    foreach(var obj in instatiator.AudioObject)
+                    {
+                        if (obj.name.Equals(target))
+                        {
+                            instatiator.audioSource.clip = obj;
+                            
+                            // Play the audio clip
+                            instatiator.audioSource.Play();
+                        }
+                    }
                 }
             }
         }
@@ -436,13 +483,21 @@ namespace AB.FSMManager
                     break;
                 case "SetActive":
                     target.SetActive(true);
+                    InteractController.Instance.AddListener(target);
                     break;
                 case "SetInactive":
                     target.SetActive(false);
+                    InteractController.Instance.RemoveListener(target);
                     break;
                 default:
                     break;
             }
+        }
+
+        public void StartAnimation(GameObject target, string path)
+        {
+            target.AddComponent<FSMAnimator.FSMAnimator>();
+            target.GetComponent<FSMAnimator.FSMAnimator>().LoadGltfBinaryFromMemory(path);
         }
         
 
