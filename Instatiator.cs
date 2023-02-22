@@ -36,7 +36,7 @@ namespace AB.Instatiator
 
         private void Awake()
         {
-            FSM json = ParseJson("/Resources/Json/Allocate.json");
+            FSM json = ParseJson("/Resources/Json/LerpTest.json");
             Instance = this;
 
             CheckMaterialCoherence(json);
@@ -45,24 +45,25 @@ namespace AB.Instatiator
                 switch (obj.Tag) //da modificare questa parte
                 {
                     case "SquareButton":
-                        o = Instantiate(SquareButtonPrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.identity); //istanzia l'oggetto creando una copia di ButtonPrefab, alla posizione indicata, e con rotazione data
+                        o = Instantiate(SquareButtonPrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.Euler(obj.Rotation.x, obj.Rotation.y, obj.Rotation.z)); //istanzia l'oggetto creando una copia di ButtonPrefab, alla posizione indicata, e con rotazione data
                         break;
                     case "RoundButton":
-                        o = Instantiate(RoundButtonPrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.identity);
+                        o = Instantiate(RoundButtonPrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.Euler(obj.Rotation.x, obj.Rotation.y, obj.Rotation.z));
                         break;
                     case "CubeObject":
-                        o = Instantiate(CubePrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.identity);
+                        o = Instantiate(CubePrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.Euler(obj.Rotation.x, obj.Rotation.y, obj.Rotation.z));
                         break;
                     case "SphereObject":
-                        o = Instantiate(SpherePrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.identity);
+                        o = Instantiate(SpherePrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.Euler(obj.Rotation.x, obj.Rotation.y, obj.Rotation.z));
                         break;
                     //con il caso "Animation" carico un gameobject vuoto che poi nel momento in cui lo devo attivare sarà chiamato anche LoadGltfBinaryFromMemory();
                     case "AnimationObject":
-                        o = Instantiate(EmptyPrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.identity);
+                        o = Instantiate(EmptyPrefab, new Vector3(obj.Position.x, obj.Position.y, obj.Position.z), Quaternion.Euler(obj.Rotation.x, obj.Rotation.y, obj.Rotation.z));
                         break;
                     default:
                         break;
                 }
+                //di default la rotazione ha x,y e z pari a 0 (ottenuti con la Quaternion.identity));
                 o.name = obj.ObjectName;
                 o.transform.localScale = new Vector3(obj.Scale.x, obj.Scale.y, obj.Scale.z);
                 o.tag = obj.Tag;

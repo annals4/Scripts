@@ -23,7 +23,7 @@ namespace AB.Interactor
         void Start()
         {
             Instance = this;
-            FSM json = ParseJson("/Resources/Json/Allocate.json");
+            FSM json = ParseJson("/Resources/Json/LerpTest.json");
             instatiator = Instatiator.Instatiator.Instance;
 
             

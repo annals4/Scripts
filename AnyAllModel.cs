@@ -24,15 +24,15 @@ namespace AB.AnyAllModel
         {
             public string ObjectName; //equivalente a Gameobject.name
             public string Type;
-            public Position Position;
-            public Scale Scale;
-            //public Coord Position, Scale, Rotation
+            public Coord Position;
+            public Coord Scale;
+            public Coord Rotation;
             public string Material; 
             public string Tag; 
         }
 
         [Serializable]
-        public class Position
+        public class Coord
         {
             public float x;
             public float y;
@@ -57,15 +57,6 @@ namespace AB.AnyAllModel
 
 
         [Serializable]
-        public class Scale
-        {
-            public float x;
-            public float y;
-            public float z;
-        }
-
-
-        [Serializable]
         public class FSMState
         {
             public string Name;
@@ -84,6 +75,15 @@ namespace AB.AnyAllModel
             public string Target; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE nome_ObjType OPPURE una delle precedenti/una delle precedenti ('/' significa execpt)
             public bool Triggered;
             public string TargetType; //****new
+            public Parameters MovementParameters;
+        }
+
+        [Serializable]
+        public class Parameters
+        {
+            public float MovementDuration;
+            public float MovementSpeed;
+            public Coord TargetCoord;
         }
 
         [Serializable]

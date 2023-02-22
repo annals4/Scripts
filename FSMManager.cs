@@ -16,6 +16,9 @@ using UnityEngine.UIElements;
 using System.Collections;
 using Microsoft.MixedReality.Toolkit;
 using System.Threading;
+using static UnityEngine.GraphicsBuffer;
+using GLTFast.Schema;
+using static System.Collections.Specialized.BitVector32;
 
 namespace AB.FSMManager
 {
@@ -42,6 +45,7 @@ namespace AB.FSMManager
         public ManipulableManager.ManipulableManager manipulableManager;
         public ActionManager.ActionManager actionManager;
 
+
         public static FSMManager Instance { get; private set; }
 
         
@@ -55,7 +59,7 @@ namespace AB.FSMManager
             headController = HeadController.HeadController.Instance;
 
 
-            fsm = ParseJson("/Resources/Json/Allocate.json"); //Insert the path of the Json that you want to parse
+            fsm = ParseJson("/Resources/Json/LerpTest.json"); //Insert the path of the Json that you want to parse
             tags = GetTags(fsm.ListOfObjects);
 
             InitializeFSM(fsm);
@@ -165,7 +169,7 @@ namespace AB.FSMManager
             {
                 StartCoroutine(Temp());
             }
-            
+
         }
 
         /// <summary>
@@ -489,6 +493,15 @@ namespace AB.FSMManager
                     target.SetActive(false);
                     InteractController.Instance.RemoveListener(target);
                     break;
+                case "Translate":
+                    StartCoroutine(LERPtransl(target, action));
+                    break;
+                case "Rotate":
+                    StartCoroutine(LERProt(target, action));
+                    break;
+                case "Scaling":
+                    StartCoroutine(LERPscale(target, action));
+                    break;
                 default:
                     break;
             }
@@ -499,9 +512,67 @@ namespace AB.FSMManager
             target.AddComponent<FSMAnimator.FSMAnimator>();
             target.GetComponent<FSMAnimator.FSMAnimator>().LoadGltfBinaryFromMemory(path);
         }
-        
 
-        
+        IEnumerator LERPtransl(GameObject o, FSMAction action)
+        {
+            float timeElapsed = 0f; //tempo da cui parto
+            float duration = action.MovementParameters.MovementDuration; //durata del movimento
+            Vector3 startPosition = o.transform.position; //posizione iniziale dell'oggetto
+            Vector3 endPosition = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
+            float distanceToTarget = Vector3.Distance(startPosition, endPosition);
+
+            while (timeElapsed < duration)
+            {
+                float distanceCovered = timeElapsed * action.MovementParameters.MovementSpeed;
+                float fractionOfJourney = distanceCovered / distanceToTarget;
+                o.transform.position = Vector3.Lerp(startPosition, endPosition, fractionOfJourney);
+                timeElapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            o.transform.position = endPosition;
+        }
+
+        IEnumerator LERProt(GameObject o, FSMAction action)
+        {
+            float timeElapsed = 0f; //tempo da cui parto
+            float duration = action.MovementParameters.MovementDuration; //durata del movimento
+            Vector3 targetPos = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
+            Quaternion startRotation = o.transform.rotation;
+            Quaternion targetRotation = o.transform.rotation * Quaternion.Euler(targetPos);
+
+            while (timeElapsed < duration)
+            {
+                float distanceCovered = timeElapsed * action.MovementParameters.MovementSpeed;
+                o.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, distanceCovered / duration);
+                timeElapsed += Time.deltaTime;
+                yield return null;
+            }
+            o.transform.rotation = targetRotation;
+
+        }
+
+        IEnumerator LERPscale(GameObject o, FSMAction action)
+        {
+            float timeElapsed = 0f;
+            float duration = action.MovementParameters.MovementDuration;
+            Vector3 startScale = o.transform.localScale;
+            Vector3 endScale = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
+            float scaleDifference = Vector3.Distance(startScale, endScale);
+
+            while (timeElapsed < duration)
+            {
+                float distanceCovered = timeElapsed * action.MovementParameters.MovementSpeed;
+                o.transform.localScale = Vector3.Lerp(startScale, endScale, distanceCovered / scaleDifference);
+                timeElapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            o.transform.localScale = endScale;
+
+        }
+
+
 
         /// <summary>
         /// Metodo che serve a verificare se si sono avverate determinate condizioni esterne per poter passare allo stato successivo
