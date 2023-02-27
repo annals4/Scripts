@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static AB.AnyAllModel.FSM;
+using static AB.FSMModel.FSM;
 using static AB.FSMManager.FSMManager;
 
 

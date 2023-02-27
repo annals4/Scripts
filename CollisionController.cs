@@ -1,37 +1,25 @@
-using AB.AnyAllModel;
-using AB.FSMManager;
-using AB.Interactor;
-using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static AB.AnyAllModel.FSM;
-using static AB.FSMManager.FSMManager;
+using static AB.FSMModel.FSM;
 
 namespace AB.CollisionController
 {
     public class CollisionController : MonoBehaviour
     {
         public static CollisionController Instance { get; private set; } = new CollisionController();
-        MixedRealityPose pose;
 
-        public Action<GameObject> Col;
-
-        private bool andCondition = true;
+        
         private bool allCondition = true;
-
-        private string firedTransition = null;
-
         List<string> tags;
         public Dictionary<string, bool> manipulableObjects;
 
         public Instatiator.Instatiator instatiator;
         public FSMManager.FSMManager fsm;
 
-
+        public Action<GameObject> Col;
         public delegate void OtherObjectChangedEventHandler(GameObject obj); //define a delegate
         public static event OtherObjectChangedEventHandler HandTrigger; //define an event based on that delegate
 
@@ -47,16 +35,6 @@ namespace AB.CollisionController
             tags = tagsList;
             manipulableObjects = GetManipulable(manObj);
         }
-        // Update is called once per frame
-        void Update()
-        {
-            /*
-            if(HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, Handedness.Any, out pose))
-            {
-                this.gameObject.SetActive(true);
-            }
-            */
-        }
 
         public Dictionary<string,bool> GetManipulable(List<GameObject> man)
         {
@@ -70,111 +48,9 @@ namespace AB.CollisionController
 
         public void OnTriggerEnter(Collider other)
          {
-            if(HandTrigger != null) //make sure that there is at least one subscriber
-            {
-                HandTrigger(other.gameObject); //this invokes our event
-            }
-            
-        }
-
-        /*
-        public string CollisionTrigger(GameObject obj, FSMState currentState)
-        {
-            firedTransition = null;
-            foreach (var transition in currentState.ListOfTransitions)
-            {
-                //ConflictAnalyser(transition);
-                SettingType setting;
-                if (Enum.TryParse(transition.SettingType, out setting))
-                {
-                    ActionSetting(setting, transition, obj);
-
-                }
-
-            }
-            return firedTransition;
-        }
-
-        public void ActionSetting(SettingType setting, FSMTransition transition, GameObject obj)
-        {
-            string objId = obj.name;
-            switch (setting)
-            {
-                case SettingType.AND:///////////tutte le azioni di una transizione devono aver avuto luogo
-
-                    andCondition = true;
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
-                    {
-                        var t = action.Target.Split(':');
-                        var tar = t[0];
-                        var excluded = t.Length > 1 ? t[1] : null;
-                        if (tar.Equals("ALL") | tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
-                        {
-                            TargetSetting(transition, action, obj, tar, excluded);
-                        }
-                        else //se il target è un oggetto qualsiasi
-                        {
-                            if (objId == action.Target) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
-                            {
-                                action.Triggered = true;
-                            }
-                        }
-                    }
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per verificare che tutte le azioni siano state triggerate
-                    {
-                        if (!action.Triggered) //condizione per verificare che tutte le azioni della transizione siano state eseguite
-                        {
-                            andCondition = false;
-                            break;
-                        }
-                    }
-                    if (andCondition)
-                    {
-                        //this.fire
-                        firedTransition = transition.Name;
-                        UnTrigger(transition);
-                        ResetManipulable(manipulableObjects);
-
-                    }
-
-                    break;
-                case SettingType.OR: ////////////solo un'azione qualsiasi della transizione deve essere stata fatta
-                    foreach (var action in transition.ActionsOnTransition)
-                    {
-                        var t = action.Target.Split(':');
-                        var tar = t[0];
-                        var excluded = t.Length > 1 ? t[1] : null;
-                        if (tar.Equals("ALL") | tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
-                        {
-                            TargetSetting(transition, action, obj, tar, excluded);
-                        }
-
-                        if (objId == action.Target)
-                        {
-                            action.Triggered = true;
-                            break;
-                        }
-                    }
-                    foreach (var action in transition.ActionsOnTransition)
-                    {
-                        if (action.Triggered)//me ne basta una
-                        {
-                            //this.machine.Fire(transition.Name);
-                            firedTransition = transition.Name;
-                            UnTrigger(transition);
-                            ResetManipulable(manipulableObjects);
-                            break;
-                        }
-                    }
-                    break;
-                default:
-                    break;
-
-            }
+            HandTrigger?.Invoke(other.gameObject); //this invokes our event
 
         }
-        */
-
         /// <summary>
         /// Il target può essere:
         /// - un oggetto qualsiasi

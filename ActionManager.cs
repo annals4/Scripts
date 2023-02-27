@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static AB.FSMManager.FSMManager;
-using static AB.AnyAllModel.FSM;
+using static AB.FSMModel.FSM;
 using AB.TempTrigger;
 using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 

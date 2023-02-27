@@ -1,24 +1,16 @@
-using static AB.AnyAllModel.FSM;
+using static AB.FSMModel.FSM;
 using Appccelerate.StateMachine;
 using Appccelerate.StateMachine.Machine;
 using UnityEngine;
 using System.IO;
 using System;
-using FSM = AB.AnyAllModel.FSM;
+using FSM = AB.FSMModel.FSM;
 using AB.Interactor;
-using AB.Instatiator;
-using AB.FSMAnimator;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using Random = System.Random;
-using UnityEngine.UIElements;
 using System.Collections;
-using Microsoft.MixedReality.Toolkit;
-using System.Threading;
-using static UnityEngine.GraphicsBuffer;
-using GLTFast.Schema;
-using static System.Collections.Specialized.BitVector32;
 
 namespace AB.FSMManager
 {
@@ -34,7 +26,7 @@ namespace AB.FSMManager
         public float initialTime = 0f; //utilizzato per registrare il tempo d'ingresso in uno stato per far partire il counter in caso di trigger temporale
         public bool tempTrigg = false;
 
-        public Dictionary<string, Vector3> startGrab = new Dictionary<string, Vector3>();
+        public Dictionary<string, Vector3> objCoordBeforeGrabbing = new Dictionary<string, Vector3>();
         public Dictionary<string, Vector3> endGrab = new Dictionary<string, Vector3>();
         List<string> tags = new List<string>();
 
@@ -85,32 +77,32 @@ namespace AB.FSMManager
         //*****************EVENTSUBSCRIBERS******************************************
 
         //MANIPULATION
-        public void OnGrabbedObj(GameObject obj, Vector3 point)
-        { //point mi restituisce il punto nel quale ho toccato l'oggetto
+        public void OnGrabbedObj(GameObject obj, Vector3 startCoord)
+        { //startCoord mi restituisce il punto nel quale ho toccato l'oggetto
 
-            if (!startGrab.ContainsKey(obj.name))
+            if (!objCoordBeforeGrabbing.ContainsKey(obj.name)) 
             {
-                startGrab.Add(obj.name, point); //startGrab è un dizionario che contiene il nome dell'oggetto come chiave e il punto da cui comincia la sua manipolazione come valore
+                objCoordBeforeGrabbing.Add(obj.name, startCoord); //objCoordBeforeGrabbing è un dizionario che contiene il nome dell'oggetto come chiave e il punto da cui comincia la sua manipolazione come valore
             }
             else
             {
-                startGrab[obj.name] = point;
+                objCoordBeforeGrabbing[obj.name] = startCoord;
             }
-            Debug.Log("Moved " + obj.name + " from position " + point);
+            Debug.Log("Moved " + obj.name + " from position " + startCoord);
 
         }
 
-        public void OnReleaseGrabbedObj(GameObject obj, Vector3 rPoint)
+        public void OnReleaseGrabbedObj(GameObject obj, Vector3 releaseCoord)
         { //point mi restituisce il punto nel quale ho rilasciato l'oggetto
 
-            string transitionFired = ActionManager.ActionManager.Instance.TransitionTrigger(obj, currentState, startGrab, rPoint, "Grabbed");
+            string transitionFired = ActionManager.ActionManager.Instance.TransitionTrigger(obj, currentState, objCoordBeforeGrabbing, releaseCoord, "Grabbed");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);
                 Debug.Log("Transition " + transitionFired + " fired.");
             }
-            startGrab[obj.name] = rPoint; //aggiorno la posizione in cui è rilasciato
-            Debug.Log("Moved " + obj.name + " to position " + rPoint);
+            objCoordBeforeGrabbing[obj.name] = releaseCoord; //aggiorno la posizione in cui è rilasciato
+            Debug.Log("Moved " + obj.name + " to position " + releaseCoord);
         }
 
         //INTERACTION
@@ -167,7 +159,7 @@ namespace AB.FSMManager
             currentTime += 1 * Time.deltaTime; //time update
             if (tempTrigg) //tempTrigg è true se nello stato corrente è presente un trigger temporale
             {
-                StartCoroutine(Temp());
+                StartCoroutine(TemporalTriggerCoroutine());
             }
 
         }
@@ -177,13 +169,13 @@ namespace AB.FSMManager
         /// Il metodo Info della classe temporal trigger restituisce la transizione in cui è presente il trigger ed il trashold
         /// </summary>
         /// <returns></returns>
-        IEnumerator Temp()
+        IEnumerator TemporalTriggerCoroutine()
         {
-            string trans = temporalTrigger.Info(currentState).trans; //transizione in cui è presente il trigger temporale
-            float trash = temporalTrigger.Info(currentState).trashold;
-            if (currentTime - initialTime > trash) //se è trascorso un tempo maggiore del trashold da quando sono entrato nello stato 
+            string transitionWithTemporalTrigger = temporalTrigger.Info(currentState).trans; //transizione in cui è presente il trigger temporale
+            float timeToTrigger = temporalTrigger.Info(currentState).trashold;
+            if (currentTime - initialTime > timeToTrigger) //se è trascorso un tempo maggiore del trashold da quando sono entrato nello stato 
             {
-                this.machine.Fire(trans);
+                this.machine.Fire(transitionWithTemporalTrigger);
                 tempTrigg = false; //vado in un nuovo stato in cui ancora non so se è presente un trigger temporale
             }
             yield return new WaitForSeconds(.5f);
