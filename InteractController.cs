@@ -1,11 +1,12 @@
 using Microsoft.MixedReality.Toolkit.UI;
-using AB.FSMModel;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static AB.FSMManager.FSMManager;
 using Microsoft.MixedReality.Toolkit.Input;
 using AB.Instatiator;
+using static AB.Model.FSM.FSMModel;
+using static AB.Manager.FSM.FSMManager;
+using AB.Model.FSM;
 
 namespace AB.Interactor
 {
@@ -23,7 +24,7 @@ namespace AB.Interactor
         void Start()
         {
             Instance = this;
-            FSM json = ParseJson("/Resources/Json/LerpTest.json");
+            FSMModel json = ParseJson("/Resources/Json/LerpTest.json");
             instatiator = Instatiator.Instatiator.Instance;
 
             

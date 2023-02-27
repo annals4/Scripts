@@ -7,11 +7,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace AB.FSMModel
+namespace AB.Model.FSM
 
 {
     [Serializable]
-    public class FSM
+    public class FSMModel
     {
         public string FSMName;
         public List<FSMObj> ListOfObjects;
@@ -68,6 +68,7 @@ namespace AB.FSMModel
             public bool FinalState;
         }
 
+        //nota: non tutti i campi devono necessariamente comparire nel Json (se un campo è nullo posso anche non scriverlo) ad eccezione di External Condition
         [Serializable]
         public class FSMAction
         {

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static AB.FSMModel.FSM;
-using FSM = AB.FSMModel.FSM;
-using static AB.FSMManager.FSMManager;
 using System.Linq;
+using AB.Model.FSM;
+using static AB.Model.FSM.FSMModel;
+using static AB.Manager.FSM.FSMManager;
 
-namespace AB.ButtonsManager
+namespace AB.Manager.Button
 {
     public class ButtonsManager : MonoBehaviour
     {
@@ -32,7 +32,7 @@ namespace AB.ButtonsManager
 
         }
 
-        public void Initialize(FSM fsm, List<string> tagsList)
+        public void Initialize(FSMModel fsm, List<string> tagsList)
         {
             buttons = GetButtons(fsm.ListOfObjects);
             tags = tagsList;

@@ -1,4 +1,3 @@
-using AB.FSMModel;
 using AB.Interactor;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UI;
@@ -7,7 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static AB.FSMManager.FSMManager;
+using static AB.Model.FSM.FSMModel;
+using static AB.Manager.FSM.FSMManager;
+using AB.Model.FSM;
 
 namespace AB.Instatiator
 {
@@ -36,7 +37,7 @@ namespace AB.Instatiator
 
         private void Awake()
         {
-            FSM json = ParseJson("/Resources/Json/LerpTest.json");
+            FSMModel json = ParseJson("/Resources/Json/LerpTest.json");
             Instance = this;
 
             CheckMaterialCoherence(json);
@@ -118,7 +119,7 @@ namespace AB.Instatiator
 
         }
 
-        public void CheckMaterialCoherence(FSM json) //verifica se i materiali degli oggetti esistono nella lista
+        public void CheckMaterialCoherence(FSMModel json) //verifica se i materiali degli oggetti esistono nella lista
         {
 
             foreach (var obj in json.ListOfObjects)

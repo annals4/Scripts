@@ -2,7 +2,7 @@ using AB.Interactor;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static AB.FSMModel.FSM;
+using static AB.Model.FSM.FSMModel;
 
 namespace AB.TempTrigger
 {

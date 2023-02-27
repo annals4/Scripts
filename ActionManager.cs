@@ -1,17 +1,15 @@
-using AB.ButtonsManager;
-using AB.CollisionController;
-using AB.Instatiator;
-using AB.ManipulableManager;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static AB.FSMManager.FSMManager;
-using static AB.FSMModel.FSM;
-using AB.TempTrigger;
-using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
+using static AB.Manager.FSM.FSMManager; //per Untrigger
+using AB.Manager.Button;
+using AB.Controller.Hand;
+using static AB.Model.FSM.FSMModel;
+using AB.Controller.Head;
+using AB.Manager.Manipulable;
 
-namespace AB.ActionManager
+namespace AB.Manager.Action
 {
     public class ActionManager : MonoBehaviour
     {
@@ -21,18 +19,18 @@ namespace AB.ActionManager
 
         private string firedTransition = null;
 
-        public ButtonsManager.ButtonsManager buttonManager;
-        public CollisionController.CollisionController collisionManager;
-        public ManipulableManager.ManipulableManager manipulableManager;
+        public ButtonsManager buttonManager;
+        public HandController collisionManager;
+        public ManipulableManager manipulableManager;
 
         public static ActionManager Instance { get; private set; } = new ActionManager();
 
         // Start is called before the first frame update
         void Start()
         {
-            buttonManager = ButtonsManager.ButtonsManager.Instance;
-            manipulableManager = ManipulableManager.ManipulableManager.Instance;
-            collisionManager = CollisionController.CollisionController.Instance;
+            buttonManager = ButtonsManager.Instance;
+            manipulableManager = ManipulableManager.Instance;
+            collisionManager = HandController.Instance;
         }
 
 
@@ -75,18 +73,18 @@ namespace AB.ActionManager
                         {
                             //guarda appunti su docs
                             case ("Button","ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand","TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
+                                HandController.Instance.CollisionAction(action, transition, obj);
                                 break;
                             case ("InTrigger", "EnterTrigger"): //chiamo quando entro in un qualche zona trigger
                             case ("OutTrigger", "ExitTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                HeadController.Instance.InTrigger(action, transition, obj);
                                 break;
                             //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
                             case ("InTrigger", "TriggerCollision"):
-                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
+                                HeadController.Instance.HeadAction(action, transition, obj);
                                 break;
                             default:
                                 break;
@@ -146,10 +144,10 @@ namespace AB.ActionManager
                         //this.fire
                         firedTransition = transition.Name;
                         UnTrigger(transition); //a tutte le azioni il campio action.trigger viene settato nuovamente a false
-                        ButtonsManager.ButtonsManager.Instance.Reset();
-                        CollisionController.CollisionController.Instance.Reset();
-                        ManipulableManager.ManipulableManager.Instance.Reset();
-                        HeadController.HeadController.Instance.GlobalReset();
+                        ButtonsManager.Instance.Reset();
+                        HandController.Instance.Reset();
+                        ManipulableManager.Instance.Reset();
+                        HeadController.Instance.GlobalReset();
 
                     }
 
@@ -162,18 +160,18 @@ namespace AB.ActionManager
                         {
                             //guarda appunti su docs
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
+                                HandController.Instance.CollisionAction(action, transition, obj);
                                 break;
                             case ("InTrigger", "EnterTrigger"): //chiamo quando entro in un qualche zona trigger
                             case ("OutTrigger", "ExitTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                HeadController.Instance.InTrigger(action, transition, obj);
                                 break;
                             //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
                             case ("InTrigger", "TriggerCollision"):
-                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
+                                HeadController.Instance.HeadAction(action, transition, obj);
                                 break;
                             default:
                                 break;
@@ -225,10 +223,10 @@ namespace AB.ActionManager
                             //this.machine.Fire(transition.Name);
                             firedTransition = transition.Name;
                             UnTrigger(transition);
-                            ButtonsManager.ButtonsManager.Instance.Reset();
-                            CollisionController.CollisionController.Instance.Reset();
-                            ManipulableManager.ManipulableManager.Instance.Reset();
-                            HeadController.HeadController.Instance.GlobalReset();
+                            ButtonsManager.Instance.Reset();
+                            HandController.Instance.Reset();
+                            ManipulableManager.Instance.Reset();
+                            HeadController.Instance.GlobalReset();
                             //ResetButtons(buttons);
                             break;
                         }
@@ -243,18 +241,18 @@ namespace AB.ActionManager
                         {
                             //guarda appunti su docs
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
+                                HandController.Instance.CollisionAction(action, transition, obj);
                                 break;
                             case ("InTrigger", "EnterTrigger"): //chiamo quando entro in un qualche zona trigger
                             case ("OutTrigger", "ExitTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                HeadController.Instance.InTrigger(action, transition, obj);
                                 break;
                             //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
                             case ("InTrigger", "TriggerCollision"):
-                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
+                                HeadController.Instance.HeadAction(action, transition, obj);
                                 break;
                             default:
                                 break;
@@ -329,10 +327,10 @@ namespace AB.ActionManager
                     {
                         firedTransition = transition.Name;
                         UnTrigger(transition);
-                        ButtonsManager.ButtonsManager.Instance.Reset();
-                        CollisionController.CollisionController.Instance.Reset();
-                        ManipulableManager.ManipulableManager.Instance.Reset();
-                        HeadController.HeadController.Instance.GlobalReset();
+                        ButtonsManager.Instance.Reset();
+                        HandController.Instance.Reset();
+                        ManipulableManager.Instance.Reset();
+                        HeadController.Instance.GlobalReset();
                         //ResetButtons(buttons);
                         break;
                     }
@@ -386,18 +384,18 @@ namespace AB.ActionManager
                         {
                             //guarda appunti su docs
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
+                                HandController.Instance.CollisionAction(action, transition, obj);
                                 break;
                             case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
                             case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                HeadController.Instance.InTrigger(action, transition, obj);
                                 break;
                             case ("Grabbed", "MoveSolidDown"):
                             case ("Grabbed", "MoveSolidUp"):
-                                ManipulableManager.ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
                                 //chiamo procedura per il grab
                                 break;
                             default:
@@ -445,10 +443,10 @@ namespace AB.ActionManager
                         //this.fire
                         firedTransition = transition.Name;
                         UnTrigger(transition); //a tutte le azioni il campio action.trigger viene settato nuovamente a false
-                        ButtonsManager.ButtonsManager.Instance.Reset();
-                        CollisionController.CollisionController.Instance.Reset();
-                        ManipulableManager.ManipulableManager.Instance.Reset();
-                        HeadController.HeadController.Instance.GlobalReset();
+                        ButtonsManager.Instance.Reset();
+                        HandController.Instance.Reset();
+                        ManipulableManager.Instance.Reset();
+                        HeadController.Instance.GlobalReset();
                         //ResetButtons(buttons); //da mettere magari una procedura che fa il reset di tutti i campi (quindi chiama la reset di tutte le classi coinvolte)
 
                     }
@@ -462,18 +460,18 @@ namespace AB.ActionManager
                         {
                             //guarda appunti su docs
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
+                                HandController.Instance.CollisionAction(action, transition, obj);
                                 break;
                             case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
                             case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                HeadController.Instance.InTrigger(action, transition, obj);
                                 break;
                             case ("MoveCubeDown", "Grabbed"):
                             case ("MoveCubeUp", "Grabbed"):
-                                ManipulableManager.ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
                                 //chiamo procedura per il grab
                                 break;
                             default:
@@ -515,10 +513,10 @@ namespace AB.ActionManager
                             //this.machine.Fire(transition.Name);
                             firedTransition = transition.Name;
                             UnTrigger(transition);
-                            ButtonsManager.ButtonsManager.Instance.Reset();
-                            CollisionController.CollisionController.Instance.Reset();
-                            ManipulableManager.ManipulableManager.Instance.Reset();
-                            HeadController.HeadController.Instance.GlobalReset();
+                            ButtonsManager.Instance.Reset();
+                            HandController.Instance.Reset();
+                            ManipulableManager.Instance.Reset();
+                            HeadController.Instance.GlobalReset();
                             //ResetButtons(buttons);
                             break;
                         }
@@ -532,18 +530,18 @@ namespace AB.ActionManager
                         switch ((flag, action.fsmAction)) //collego azione chiamante e azione effettuata
                         {
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
+                                HandController.Instance.CollisionAction(action, transition, obj);
                                 break;
                             case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
                             case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
+                                HeadController.Instance.InTrigger(action, transition, obj);
                                 break;
                             case ("MoveCubeDown", "Grabbed"):
                             case ("MoveCubeUp", "Grabbed"):
-                                ManipulableManager.ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
                                 //chiamo procedura per il grab
                                 break;
                             default:
@@ -581,10 +579,10 @@ namespace AB.ActionManager
                     {
                         firedTransition = transition.Name;
                         UnTrigger(transition);
-                        ButtonsManager.ButtonsManager.Instance.Reset();
-                        CollisionController.CollisionController.Instance.Reset();
-                        ManipulableManager.ManipulableManager.Instance.Reset();
-                        HeadController.HeadController.Instance.GlobalReset();
+                        ButtonsManager.Instance.Reset();
+                        HandController.Instance.Reset();
+                        ManipulableManager.Instance.Reset();
+                        HeadController.Instance.GlobalReset();
                         //ResetButtons(buttons);
                         break;
                     }

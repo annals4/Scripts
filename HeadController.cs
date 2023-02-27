@@ -1,14 +1,13 @@
+using AB.Manager.FSM;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static AB.FSMModel.FSM;
-using static AB.FSMManager.FSMManager;
+using static AB.Model.FSM.FSMModel;
 
-
-namespace AB.HeadController
+namespace AB.Controller.Head
 {
     public class HeadController : MonoBehaviour
     {
@@ -26,7 +25,7 @@ namespace AB.HeadController
         public Dictionary<string, bool> triggerObjects;
 
         public Instatiator.Instatiator instatiator;
-        public FSMManager.FSMManager fsm;
+        public FSMManager fsm;
 
 
         public delegate void HeadTriggerEnterEventHandler(GameObject obj); //define a delegate
@@ -40,7 +39,7 @@ namespace AB.HeadController
         void Start()
         {
             instatiator = Instatiator.Instatiator.Instance;
-            fsm = FSMManager.FSMManager.Instance;
+            fsm = FSMManager.Instance;
 
 
         }

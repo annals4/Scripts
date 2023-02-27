@@ -1,55 +1,38 @@
-using AB.Interactor;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static AB.FSMModel.FSM;
-using Newtonsoft.Json;
 using System.Linq;
+using static AB.Model.FSM.FSMModel;
 
-namespace AB.ManipulableManager
+namespace AB.Manager.Manipulable
 {
     public class ManipulableManager : MonoBehaviour
     {
         public static ManipulableManager Instance { get; private set; } = new ManipulableManager();
 
-        private bool andCondition = true;
         private bool allCondition = true;
 
         private string firedTransition = null;
 
         List<string> tags;
-        public Dictionary<string, bool> manipulableObjects;
+        public Dictionary<string, bool> manipublableObjDictionary;
 
-        // Start is called before the first frame update
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
-        public void Initialize(List<string> tagsList, List<GameObject> manObj)
+        public void Initialize(List<string> tagsList, List<GameObject> manipulableObjList)
         {
             tags = tagsList;
-            manipulableObjects = GetManipulable(manObj);
+            manipublableObjDictionary = GetManipulable(manipulableObjList);
         }
 
-        public Dictionary<string, bool> GetManipulable(List<GameObject> man)
+        public Dictionary<string, bool> GetManipulable(List<GameObject> manipulableObjList)
         {
-            Dictionary<string, bool> ob = new Dictionary<string, bool>();
-            foreach (var obj in man)
+            Dictionary<string, bool> manipulableObjDictionary = new Dictionary<string, bool>();
+            foreach (var obj in manipulableObjList)
             {
-                ob.Add(obj.name, false);
+                manipulableObjDictionary.Add(obj.name, false);
             }
-            return ob;
+            return manipulableObjDictionary;
         }
 
-        public string ManipulationTrigger(GameObject obj, FSMState currentState, Dictionary<string, Vector3> startGrab, Vector3 rPoint)
+        public string ManipulationTrigger(GameObject obj, FSMState currentState, Dictionary<string, Vector3> objCoordBeforeGrabbing, Vector3 rPoint)
         {
             firedTransition = null;
             foreach (var transition in currentState.ListOfTransitions)
@@ -60,13 +43,13 @@ namespace AB.ManipulableManager
                     {
                         case "MoveSolidDown":
                             //da gestire i vari casi (attenzione al flip che fa in 0, dove passa a negativo)
-                            if (obj.name == action.Target && (startGrab[obj.name].y-rPoint.y > 0.1))
+                            if (obj.name == action.Target && (objCoordBeforeGrabbing[obj.name].y-rPoint.y > 0.1))
                             {
                                 firedTransition = transition.Name;
                             }
                             break;
                         case "MoveSolidUp":
-                            if (obj.name == action.Target && (rPoint.y-startGrab[obj.name].y > 0.1))
+                            if (obj.name == action.Target && (rPoint.y-objCoordBeforeGrabbing[obj.name].y > 0.1))
                             {
                                 firedTransition = transition.Name;
                             }
@@ -136,7 +119,7 @@ namespace AB.ManipulableManager
         {
             string objId = obj.name;
 
-            manipulableObjects[objId] = true; //diventa vero poiché la condizione dell'azione è stata verificata
+            manipublableObjDictionary[objId] = true; //diventa vero poiché la condizione dell'azione è stata verificata
             
             switch (target)
             {
@@ -146,16 +129,16 @@ namespace AB.ManipulableManager
 
                     if (excluded != null && !tags.Contains(excluded))
                     {
-                        manipulableObjects[excluded] = true; //vera su tutti gli oggetti esclusi (default)
+                        manipublableObjDictionary[excluded] = true; //vera su tutti gli oggetti esclusi (default)
                     }
                     else if (tags.Contains(excluded))
                     {
                         foreach (var ex in GameObject.FindGameObjectsWithTag(excluded))
                         {
-                            manipulableObjects[ex.name] = true;
+                            manipublableObjDictionary[ex.name] = true;
                         }
                     }
-                    foreach (var objm in manipulableObjects.ToList()) //scorro tutti gli oggetti manipolabili
+                    foreach (var objm in manipublableObjDictionary.ToList()) //scorro tutti gli oggetti manipolabili
                     {
                         if (!objm.Value == true | !allCondition) //condizione per verificare se tutti gli oggetti siano stati toccati
                         {
@@ -173,7 +156,7 @@ namespace AB.ManipulableManager
 
                     allCondition = false;
 
-                    foreach (var man in manipulableObjects.ToList()) //scorro tutti i bottoni
+                    foreach (var man in manipublableObjDictionary.ToList()) //scorro tutti i bottoni
                     {
                         if (man.Value == true && !objId.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
                         {
@@ -208,7 +191,7 @@ namespace AB.ManipulableManager
 
         public void Reset()
         {
-            ResetManipulable(manipulableObjects);
+            ResetManipulable(manipublableObjDictionary);
         }
     }
 }
