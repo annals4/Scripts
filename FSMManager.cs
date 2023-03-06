@@ -3,9 +3,10 @@ using Appccelerate.StateMachine.Machine;
 using UnityEngine;
 using System.IO;
 using System;
-using AB.Interactor;
+using AB.Controller.Interactor;
 using AB.Controller.Hand;
 using AB.Controller.Head;
+using AB.Controller.Instatiator;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
@@ -14,6 +15,10 @@ using System.Collections;
 using AB.Manager.Button;
 using AB.Model.FSM;
 using static AB.Model.FSM.FSMModel;
+using AB.Manager.Manipulable;
+using AB.Manager.Action;
+using AB.Trigger.Temporal;
+using AB.Manager.Prova;
 
 namespace AB.Manager.FSM
 {
@@ -33,12 +38,13 @@ namespace AB.Manager.FSM
         public Dictionary<string, Vector3> endGrab = new Dictionary<string, Vector3>();
         List<string> tags = new List<string>();
 
-        public Instatiator.Instatiator instatiator;
-        public TempTrigger.TemporalTrigger temporalTrigger;
+        public InstanceController instatiator;
+        public TemporalTrigger temporalTrigger;
         public HandController handController;
         public HeadController headController;
-        public Manipulable.ManipulableManager manipulableManager;
-        public Action.ActionManager actionManager;
+        public ManipulableManager manipulableManager;
+        public ActionManager actionManager;
+        public Prova1 prova1;
 
 
         public static FSMManager Instance { get; private set; }
@@ -46,15 +52,16 @@ namespace AB.Manager.FSM
         
         public void Start()
         {
-            instatiator = Instatiator.Instatiator.Instance;
-            temporalTrigger = TempTrigger.TemporalTrigger.Instance;
+            instatiator = InstanceController.Instance;
+            temporalTrigger = TemporalTrigger.Instance;
             handController = HandController.Instance;
-            actionManager = Action.ActionManager.Instance;
-            manipulableManager = Manipulable.ManipulableManager.Instance;
+            actionManager = ActionManager.Instance;
+            manipulableManager = ManipulableManager.Instance;
             headController = HeadController.Instance;
+            prova1 = Prova1.Instance;
 
 
-            fsm = ParseJson("/Resources/Json/LerpTest.json"); //Insert the path of the Json that you want to parse
+            fsm = ParseJson("/Resources/Json/Tester1.json"); //Insert the path of the Json that you want to parse
             tags = GetTags(fsm.ListOfObjects);
 
             InitializeFSM(fsm);
@@ -72,6 +79,8 @@ namespace AB.Manager.FSM
             handController.Initialize(tags, instatiator.ManipulableObject);
             manipulableManager.Initialize(tags, instatiator.ManipulableObject);
             headController.Initialize(tags, instatiator.TriggerObject);
+            prova1.Initialize(tags, instatiator.ButtonObject);
+
 
 
         }
@@ -98,7 +107,7 @@ namespace AB.Manager.FSM
         public void OnReleaseGrabbedObj(GameObject obj, Vector3 releaseCoord)
         { //point mi restituisce il punto nel quale ho rilasciato l'oggetto
 
-            string transitionFired = Action.ActionManager.Instance.TransitionTrigger(obj, currentState, objCoordBeforeGrabbing, releaseCoord, "Grabbed");
+            string transitionFired = ActionManager.Instance.TransitionTrigger(obj, currentState, objCoordBeforeGrabbing, releaseCoord, "Grabbed");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);
@@ -111,7 +120,7 @@ namespace AB.Manager.FSM
         //INTERACTION
         private void OnButtonClick(GameObject obj) //chiamato ogni volta che si clicca un bottone
         {
-            string transitionFired = Action.ActionManager.Instance.TransitionTrigger(obj, currentState, "Button");
+            string transitionFired = ActionManager.Instance.TransitionTrigger(obj, currentState, "Button");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);
@@ -123,7 +132,7 @@ namespace AB.Manager.FSM
         public void OnHandTrigger(GameObject obj) //chiamato ogni volta che si tocca un oggetto 
         {
             
-            string transitionFired = Action.ActionManager.Instance.TransitionTrigger(obj, currentState, "Hand");
+            string transitionFired = ActionManager.Instance.TransitionTrigger(obj, currentState, "Hand");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);
@@ -136,7 +145,7 @@ namespace AB.Manager.FSM
 
         private void OnHeadTriggerEnter(GameObject obj) //chiamato ogni volta che la testa collide con qualcosa
         {
-            string transitionFired = Action.ActionManager.Instance.TransitionTrigger(obj, currentState, "InTrigger");
+            string transitionFired = ActionManager.Instance.TransitionTrigger(obj, currentState, "InTrigger");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);
@@ -146,7 +155,7 @@ namespace AB.Manager.FSM
 
         private void OnHeadTriggerExit(GameObject obj) //chiamato ogni volta che termina la collisione della testa
         {
-            string transitionFired = Action.ActionManager.Instance.TransitionTrigger(obj, currentState, "OutTrigger");
+            string transitionFired = ActionManager.Instance.TransitionTrigger(obj, currentState, "OutTrigger");
             if (transitionFired != null)
             {
                 this.machine.Fire(transitionFired);

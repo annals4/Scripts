@@ -264,6 +264,21 @@ namespace AB.Manager.Button
 
         }
 
+
+        /// <summary>
+        /// provo il default: so che i bottoni con un certo tag devono essere tutti true, quindi
+        /// allCondition = false;
+        /// if(excluded!= null){ //caso excluded
+        /// buttons[excluded] = true;
+        /// }
+        /// foreach (var button in buttons.ToList()){
+        /// if(
+        /// }
+        /// if (obj.tag.Equals(target) && !objId.Equals(excluded)){
+        /// button
+        /// }
+        /// </summary>
+
         public void Reset()
         {
             ResetButtons(buttons);

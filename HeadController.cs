@@ -1,3 +1,4 @@
+using AB.Controller.Instatiator;
 using AB.Manager.FSM;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
@@ -15,16 +16,11 @@ namespace AB.Controller.Head
         MixedRealityPose pose;
 
         public Action<GameObject> Col;
-
-        private bool andCondition = true;
         private bool allCondition = true;
-
-        private string firedTransition = null;
-
         List<string> tags;
         public Dictionary<string, bool> triggerObjects;
 
-        public Instatiator.Instatiator instatiator;
+        public InstanceController instatiator;
         public FSMManager fsm;
 
 
@@ -38,7 +34,7 @@ namespace AB.Controller.Head
         // Start is called before the first frame update
         void Start()
         {
-            instatiator = Instatiator.Instatiator.Instance;
+            instatiator = InstanceController.Instance;
             fsm = FSMManager.Instance;
 
 

@@ -1,10 +1,7 @@
-using AB.Interactor;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static AB.Model.FSM.FSMModel;
 
-namespace AB.TempTrigger
+namespace AB.Trigger.Temporal
 {
     public class TemporalTrigger : MonoBehaviour
     {

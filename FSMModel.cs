@@ -73,7 +73,7 @@ namespace AB.Model.FSM
         public class FSMAction
         {
             public string fsmAction;
-            public string Target; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE nome_ObjType OPPURE una delle precedenti/una delle precedenti ('/' significa execpt)
+            public string Target; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE una delle precedenti:una delle precedenti (':' significa execpt)
             public bool Triggered;
             public string TargetType; //****new
             public Parameters MovementParameters;

@@ -5,6 +5,7 @@ using UnityEngine;
 using static AB.Manager.FSM.FSMManager; //per Untrigger
 using AB.Manager.Button;
 using AB.Controller.Hand;
+using AB.Manager.Prova;
 using static AB.Model.FSM.FSMModel;
 using AB.Controller.Head;
 using AB.Manager.Manipulable;
@@ -22,6 +23,7 @@ namespace AB.Manager.Action
         public ButtonsManager buttonManager;
         public HandController collisionManager;
         public ManipulableManager manipulableManager;
+        public Prova1 prova1;
 
         public static ActionManager Instance { get; private set; } = new ActionManager();
 
@@ -31,6 +33,7 @@ namespace AB.Manager.Action
             buttonManager = ButtonsManager.Instance;
             manipulableManager = ManipulableManager.Instance;
             collisionManager = HandController.Instance;
+            prova1 = Prova1.Instance;
         }
 
 
@@ -73,7 +76,8 @@ namespace AB.Manager.Action
                         {
                             //guarda appunti su docs
                             case ("Button","ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                //ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                Prova1.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand","TouchCube"): //ho chiamato il metodo toccando un oggetto
                                 HandController.Instance.CollisionAction(action, transition, obj);
@@ -144,7 +148,8 @@ namespace AB.Manager.Action
                         //this.fire
                         firedTransition = transition.Name;
                         UnTrigger(transition); //a tutte le azioni il campio action.trigger viene settato nuovamente a false
-                        ButtonsManager.Instance.Reset();
+                        //ButtonsManager.Instance.Reset();
+                        Prova1.Instance.Reset();
                         HandController.Instance.Reset();
                         ManipulableManager.Instance.Reset();
                         HeadController.Instance.GlobalReset();

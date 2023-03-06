@@ -3,18 +3,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Microsoft.MixedReality.Toolkit.Input;
-using AB.Instatiator;
 using static AB.Model.FSM.FSMModel;
 using static AB.Manager.FSM.FSMManager;
 using AB.Model.FSM;
+using AB.Controller.Instatiator;
 
-namespace AB.Interactor
+namespace AB.Controller.Interactor
 {
     public class InteractController : MonoBehaviour
     {
         public static InteractController Instance { get; private set; } = new InteractController();
         public Action<GameObject> ButtonClick;
-        public Instatiator.Instatiator instatiator;
+        public InstanceController instatiator;
         public Action<GameObject, Vector3> GrabbedObj;
         public Action<GameObject, Vector3> ReleasedGrabbedObj;
         public List<string> interactables = new List<string>(); //lista degli id degli oggetti interactables
@@ -24,8 +24,8 @@ namespace AB.Interactor
         void Start()
         {
             Instance = this;
-            FSMModel json = ParseJson("/Resources/Json/LerpTest.json");
-            instatiator = Instatiator.Instatiator.Instance;
+            FSMModel json = ParseJson("/Resources/Json/Tester1.json");
+            instatiator = InstanceController.Instance;
 
             
 

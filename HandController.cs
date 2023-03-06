@@ -1,3 +1,4 @@
+using AB.Controller.Instatiator;
 using AB.Manager.FSM;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
@@ -17,7 +18,7 @@ namespace AB.Controller.Hand
         List<string> tags;
         public Dictionary<string, bool> manipulableObjects;
 
-        public Instatiator.Instatiator instatiator;
+        public InstanceController instatiator;
         public FSMManager fsm;
 
         public Action<GameObject> Col;
@@ -28,7 +29,7 @@ namespace AB.Controller.Hand
         // Start is called before the first frame update
         void Start()
         {
-            instatiator = Instatiator.Instatiator.Instance;
+            instatiator = InstanceController.Instance;
             fsm = FSMManager.Instance;
         }
         public void Initialize(List<string> tagsList, List<GameObject> manObj)
