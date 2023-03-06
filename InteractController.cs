@@ -12,13 +12,19 @@ namespace AB.Controller.Interactor
 {
     public class InteractController : MonoBehaviour
     {
-        public static InteractController Instance { get; private set; } = new InteractController();
+        public static InteractController Instance { get; private set; } 
         public Action<GameObject> ButtonClick;
         public InstanceController instatiator;
         public Action<GameObject, Vector3> GrabbedObj;
         public Action<GameObject, Vector3> ReleasedGrabbedObj;
         public List<string> interactables = new List<string>(); //lista degli id degli oggetti interactables
         public List<string> manipulable = new List<string>();
+
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         // Start is called before the first frame update
         void Start()

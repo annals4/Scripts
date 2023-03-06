@@ -10,7 +10,7 @@ namespace AB.Manager.Button
 {
     public class ButtonsManager : MonoBehaviour
     {
-        public static ButtonsManager Instance { get; private set; } = new ButtonsManager();
+        public static ButtonsManager Instance { get; private set; }
 
         private bool andCondition = true;
         private bool allCondition = true;
@@ -19,6 +19,11 @@ namespace AB.Manager.Button
 
         public Dictionary<string, bool> buttons;
         List<string> tags;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         // Start is called before the first frame update
         void Start()

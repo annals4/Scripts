@@ -12,13 +12,14 @@ namespace AB.Controller.Head
 {
     public class HeadController : MonoBehaviour
     {
-        public static HeadController Instance { get; private set; } = new HeadController();
+        public static HeadController Instance { get; private set; } 
         MixedRealityPose pose;
 
         public Action<GameObject> Col;
         private bool allCondition = true;
         List<string> tags;
-        public Dictionary<string, bool> triggerObjects;
+        List<GameObject> listOfTriggers = new List<GameObject>();
+        public Dictionary<GameObject, bool> dictionaryOfTriggers;
 
         public InstanceController instatiator;
         public FSMManager fsm;
@@ -30,6 +31,10 @@ namespace AB.Controller.Head
         public delegate void HeadTriggerExitEventHandler(GameObject obj); //define a delegate
         public static event HeadTriggerExitEventHandler HeadTriggerExit; //define an event based on that delegate
 
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         // Start is called before the first frame update
         void Start()
@@ -39,24 +44,25 @@ namespace AB.Controller.Head
 
 
         }
-        public void Initialize(List<string> tagsList, List<GameObject> trig)
+        public void Initialize(List<string> tagsList, List<GameObject> listOfTriggers)
         {
             tags = tagsList;
-            triggerObjects = GetTriggers(trig);
+            dictionaryOfTriggers = GetTriggers(listOfTriggers);
+            this.listOfTriggers = listOfTriggers;
         }
         // Update is called once per frame
         void Update()
         {
         }
 
-        public Dictionary<string, bool> GetTriggers(List<GameObject> tr)
+        public Dictionary<GameObject, bool> GetTriggers(List<GameObject> listOfTriggers)
         {
-            Dictionary<string, bool> trigg = new Dictionary<string, bool>();
-            foreach (var obj in tr)
+            Dictionary<GameObject, bool> triggers = new Dictionary<GameObject, bool>();
+            foreach (var obj in listOfTriggers)
             {
-                trigg.Add(obj.name, false);
+                triggers.Add(obj, false);
             }
-            return trigg;
+            return triggers;
         }
 
         public void OnTriggerEnter(Collider other)
@@ -111,9 +117,7 @@ namespace AB.Controller.Head
         /// <param name="objId"></param>
         public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
         {
-            string objId = obj.name;
-
-            triggerObjects[objId] = true; //diventa vero quando tocco un oggetto
+            dictionaryOfTriggers[obj] = true; //diventa vero quando tocco un oggetto
 
             switch (target)
             {
@@ -121,38 +125,52 @@ namespace AB.Controller.Head
 
                     allCondition = true;
 
-                    if (excluded != null && !tags.Contains(excluded))
+                    if (excluded != null)
                     {
-                        triggerObjects[excluded] = true;
-                    }
-                    else if (tags.Contains(excluded))
-                    {
-                        foreach (var ex in GameObject.FindGameObjectsWithTag(excluded))
+                        if (tags.Contains(excluded)) //ciò che è escluso è un gruppo di tag
                         {
-                           triggerObjects[ex.name] = true;
+                            foreach (var ex in GameObject.FindGameObjectsWithTag(excluded)) //scorro tutti i gameobject con quel tag
+                            {
+                                dictionaryOfTriggers[ex] = true;
+                            }
                         }
-                    }
-                    foreach (var objm in triggerObjects.ToList()) //scorro tutti gli oggetti manipolabili
-                    {
-                        if (!objm.Value == true | !allCondition) //condizione per verificare se tutti gli oggetti siano stati toccati
+                        else //l'escluso è un gameobject
                         {
-                            allCondition = false;
-                            break; //appena allCondition diventa falsa non devo più andare avanti
-                        }
+                            foreach (var triggerObj in listOfTriggers)
+                            {
+                                if (triggerObj.name.Equals(excluded))
+                                {
+                                    dictionaryOfTriggers[triggerObj] = true;
+                                }
 
+                            }
+                        }
+                    }
+                    foreach (var dictionaryObj in dictionaryOfTriggers.ToList()) //scorro tutti i bottoni
+                    {
+                        if (dictionaryObj.Key.activeSelf) //check se sia attivo o meno
+                        {
+                            if (!dictionaryObj.Value == true | !allCondition) //condizione per verificare se tutti i bottoni siano stati pigiati
+                            {
+                                allCondition = false;
+                                break; //appena allCondition diventa falsa non devo più andare avanti
+                            }
+                        }
                     }
                     if (allCondition && !obj.tag.Equals(excluded))
                     {
                         action.Triggered = true;
                     }
+
                     break;
+
                 case "ANY": //qui quando clicco un bottone qualsiasi (ANY/But3), ANY/Modificabile
 
                     allCondition = false;
 
-                    foreach (var man in triggerObjects.ToList()) //scorro tutti i bottoni
+                    foreach (var dictionaryObj in dictionaryOfTriggers.ToList()) //scorro tutti i bottoni
                     {
-                        if (man.Value == true && !objId.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
+                        if (dictionaryObj.Value == true && !obj.name.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
                         {
                             allCondition = true;
                             break;
@@ -165,7 +183,24 @@ namespace AB.Controller.Head
                     }
                     break;
                 default: //NB: non ha senso escludere un tag da un altro tag (quindi tipo TAG1/TAG2) poiché i tag non si racchiudono
-                    if (obj.tag.Equals(target) && !objId.Equals(excluded)) //se il tag dell'oggetto cliccato è quello desiderato e l'oggetto non è escluso
+
+                    allCondition = true;
+                    foreach (var triggerObj in listOfTriggers)
+                    {
+                        if (triggerObj.name.Equals(excluded) || triggerObj.activeSelf == false)
+                        {
+                            dictionaryOfTriggers[triggerObj] = true;
+                        }
+                    }
+                    foreach (var dictionaryObj in dictionaryOfTriggers)
+                    {
+                        if (dictionaryObj.Key.CompareTag(target) && dictionaryObj.Value == false) //l'oggetto ha il tag del target ed il suo valore è true (è stato toccato o è excluded)
+                        {
+                            allCondition = false;
+                            break;
+                        }
+                    }
+                    if (allCondition)
                     {
                         action.Triggered = true;
                     }
@@ -175,7 +210,7 @@ namespace AB.Controller.Head
 
         }
         
-
+        //TODO: da rivedere
         //CASO2: in cui entro in una zona trigger e si scatena un azione sino a quando non esco (accoppiare le azioni di EnterTrigger con ExitTrigger)
         public void InTrigger(FSMAction action, FSMTransition transition, GameObject obj)
         {
@@ -184,7 +219,7 @@ namespace AB.Controller.Head
             var excluded = t.Length > 1 ? t[1] : null;
 
             //PASSO 1: DISTINGUO IL CASO IN BASE AL TARGET
-            //non ha senso entrare in tutte le zone trigger, forse
+            //non ha senso entrare in tutte le zone trigger perché l'effetto è duraturo solo se sono all'interno di essa
             if (tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
             {
                 InSetting(transition, action, obj, tar, excluded); //SETTA TRUE sull'azione triggerata
@@ -226,16 +261,16 @@ namespace AB.Controller.Head
 
         public void GlobalReset()
         {
-            ResetTriggers(triggerObjects);
+            ResetTriggers(dictionaryOfTriggers);
         }
 
 
 
-        public void ResetTriggers(Dictionary<string, bool> trigg)
+        public void ResetTriggers(Dictionary<GameObject, bool> dictionaryOfTriggers)
         {
-            foreach (var obj in trigg.ToList()) //scorro tutti i bottoni
+            foreach (var obj in dictionaryOfTriggers.ToList()) //scorro tutti i bottoni
             {
-                trigg[obj.Key] = false;
+                dictionaryOfTriggers[obj.Key] = false;
             }
 
         }

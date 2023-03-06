@@ -25,7 +25,13 @@ namespace AB.Manager.Action
         public ManipulableManager manipulableManager;
         public Prova1 prova1;
 
-        public static ActionManager Instance { get; private set; } = new ActionManager();
+        public static ActionManager Instance { get; private set; }
+
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         // Start is called before the first frame update
         void Start()
@@ -93,47 +99,6 @@ namespace AB.Manager.Action
                             default:
                                 break;
                         }
-                        //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
-                        /*
-                        switch (action.fsmAction)
-                        {
-                            case "ButtonClick":
-                                if (flag.Equals("Button"))
-                                {
-                                    ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                }
-                                //chiamo procedura per i bottoni
-                                //Prova() farà si che se l'azione è stata attivata l'action.triggered sarà settato a true
-                                break;
-                            case "TouchCube":
-                                if (flag.Equals("Hand"))
-                                {
-                                    CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
-                                }
-                                //chiamo procedura per il tocco
-                                break;
-                            case "MoveCubeDown":
-                            case "MoveCubeUp":
-                                //chiamo procedura per il grab
-                                break;
-                            case "StartTrigger":
-                                if (flag.Equals("Head"))
-                                {
-                                    HeadController.HeadController.Instance.HeadAction(action, transition, obj);
-                                }
-                                break;
-                            case "InTrigger":
-                            case "OutTrigger":
-                                if (flag.Equals("EnterTrigger") | flag.Equals("ExitTrigger"))
-                                {
-                                    HeadController.HeadController.Instance.InTrigger(action, transition, obj);
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                        */
-
                     }
                     foreach (var action in transition.ActionsOnTransition) //ciclo per verificare che tutte le azioni siano state triggerate
                     {
@@ -145,10 +110,8 @@ namespace AB.Manager.Action
                     }
                     if (andCondition)
                     {
-                        //this.fire
                         firedTransition = transition.Name;
                         UnTrigger(transition); //a tutte le azioni il campio action.trigger viene settato nuovamente a false
-                        //ButtonsManager.Instance.Reset();
                         Prova1.Instance.Reset();
                         HandController.Instance.Reset();
                         ManipulableManager.Instance.Reset();
@@ -165,7 +128,8 @@ namespace AB.Manager.Action
                         {
                             //guarda appunti su docs
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                //ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                Prova1.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
                                 HandController.Instance.CollisionAction(action, transition, obj);
@@ -181,54 +145,15 @@ namespace AB.Manager.Action
                             default:
                                 break;
                         }
-                        /*
-                        switch (action.fsmAction)
-                        {
-                            case "ButtonClick":
-                                if (flag.Equals("Button"))
-                                {
-                                    ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                }
-                                //chiamo procedura per i bottoni
-                                //Prova() farà si che se l'azione è stata attivata l'action.triggered sarà settato a true
-                                break;
-                            case "TouchCube":
-                                if (flag.Equals("Hand"))
-                                {
-                                    CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
-                                }
-                                //chiamo procedura per il tocco
-                                break;
-                            case "MoveCubeDown":
-                            case "MoveCubeUp":
-                                //chiamo procedura per il grab
-                                break;
-                            case "StartTrigger":
-                                if (flag.Equals("Head"))
-                                {
-                                    HeadController.HeadController.Instance.HeadAction(action, transition, obj);
-                                }
-                                break;
-                            case "InTrigger":
-                            case "OutTrigger":
-                                if (flag.Equals("Head"))
-                                {
-                                    HeadController.HeadController.Instance.InTrigger(action, transition, obj);
-                                }
-                                break;
-                            default:
-                                break;
-                        }*/
-
                     }
                     foreach (var action in transition.ActionsOnTransition)
                     {
                         if (action.Triggered)//me ne basta una
                         {
-                            //this.machine.Fire(transition.Name);
                             firedTransition = transition.Name;
                             UnTrigger(transition);
                             ButtonsManager.Instance.Reset();
+                            Prova1.Instance.Reset();
                             HandController.Instance.Reset();
                             ManipulableManager.Instance.Reset();
                             HeadController.Instance.GlobalReset();
@@ -246,7 +171,8 @@ namespace AB.Manager.Action
                         {
                             //guarda appunti su docs
                             case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                //ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                                Prova1.Instance.ButtonAction(action, transition, obj);
                                 break;
                             case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
                                 HandController.Instance.CollisionAction(action, transition, obj);
@@ -262,45 +188,6 @@ namespace AB.Manager.Action
                             default:
                                 break;
                         }
-                        /*
-                        switch (action.fsmAction)
-                        {
-                            case "ButtonClick":
-                                if (flag.Equals("Button"))
-                                {
-                                    ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                }
-                                //chiamo procedura per i bottoni
-                                //Prova() farà si che se l'azione è stata attivata l'action.triggered sarà settato a true
-                                break;
-                            case "TouchCube":
-                                if (flag.Equals("Hand"))
-                                {
-                                    CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
-                                }
-                                //chiamo procedura per il tocco
-                                break;
-                            case "MoveCubeDown":
-                            case "MoveCubeUp":
-                                //chiamo procedura per il grab
-                                break;
-                            case "StartTrigger":
-                                if (flag.Equals("Head"))
-                                {
-                                    HeadController.HeadController.Instance.HeadAction(action, transition, obj);
-                                }
-                                break;
-                            case "InTrigger":
-                            case "OutTrigger":
-                                if (flag.Equals("Head"))
-                                {
-                                    HeadController.HeadController.Instance.InTrigger(action, transition, obj);
-                                }
-                                break;
-                            default:
-                                break;
-                        }*/
-
                         if (transition.ActionsOnTransition[0].Triggered)
                         {
                             ord = 1;
@@ -336,6 +223,8 @@ namespace AB.Manager.Action
                         HandController.Instance.Reset();
                         ManipulableManager.Instance.Reset();
                         HeadController.Instance.GlobalReset();
+                        Prova1.Instance.Reset();
+                        ord = 0;
                         //ResetButtons(buttons);
                         break;
                     }
@@ -387,17 +276,6 @@ namespace AB.Manager.Action
                         //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
                         switch ((flag, action.fsmAction)) //collego azione chiamante e azione effettuata
                         {
-                            //guarda appunti su docs
-                            case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                break;
-                            case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                HandController.Instance.CollisionAction(action, transition, obj);
-                                break;
-                            case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
-                            case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.Instance.InTrigger(action, transition, obj);
-                                break;
                             case ("Grabbed", "MoveSolidDown"):
                             case ("Grabbed", "MoveSolidUp"):
                                 ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
@@ -406,33 +284,6 @@ namespace AB.Manager.Action
                             default:
                                 break;
                         }
-                        /*
-                        switch (action.fsmAction)
-                        {
-                            case "ButtonClick":
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                //chiamo procedura per i bottoni
-                                //Prova() farà si che se l'azione è stata attivata l'action.triggered sarà settato a true
-                                break;
-                            case "TouchCube":
-                                //chiamo procedura per il tocco
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
-                                break;
-                            case "MoveCubeDown":
-                            case "MoveCubeUp":
-                                ManipulableManager.ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
-                                //chiamo procedura per il grab
-                                break;
-                            case "StartTrigger":
-                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
-                                break;
-                            case "InTrigger":
-                            case "OutTrigger":
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
-                                break;
-                            default:
-                                break;
-                        }*/
 
                     }
                     foreach (var action in transition.ActionsOnTransition) //ciclo per verificare che tutte le azioni siano state triggerate
@@ -463,17 +314,6 @@ namespace AB.Manager.Action
                         //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
                         switch ((flag, action.fsmAction)) //collego azione chiamante e azione effettuata
                         {
-                            //guarda appunti su docs
-                            case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                break;
-                            case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                HandController.Instance.CollisionAction(action, transition, obj);
-                                break;
-                            case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
-                            case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.Instance.InTrigger(action, transition, obj);
-                                break;
                             case ("MoveCubeDown", "Grabbed"):
                             case ("MoveCubeUp", "Grabbed"):
                                 ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
@@ -482,33 +322,6 @@ namespace AB.Manager.Action
                             default:
                                 break;
                         }
-                        /*
-                        switch (action.fsmAction)
-                        {
-                            case "ButtonClick":
-                                ButtonsManager.ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                //chiamo procedura per i bottoni
-                                //Prova() farà si che se l'azione è stata attivata l'action.triggered sarà settato a true
-                                break;
-                            case "TouchCube":
-                                CollisionController.CollisionController.Instance.CollisionAction(action, transition, obj);
-                                //chiamo procedura per il tocco
-                                break;
-                            case "MoveCubeDown":
-                            case "MoveCubeUp":
-                                ManipulableManager.ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
-                                //chiamo procedura per il grab
-                                break;
-                            case "StartTrigger":
-                                HeadController.HeadController.Instance.HeadAction(action, transition, obj);
-                                break;
-                            case "InTrigger":
-                            case "OutTrigger":
-                                HeadController.HeadController.Instance.InTrigger(action, transition, obj);
-                                break;
-                            default:
-                                break;
-                        }*/
 
                     }
                     foreach (var action in transition.ActionsOnTransition)
@@ -534,16 +347,6 @@ namespace AB.Manager.Action
                         //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
                         switch ((flag, action.fsmAction)) //collego azione chiamante e azione effettuata
                         {
-                            case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                                ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                                break;
-                            case ("Hand", "TouchCube"): //ho chiamato il metodo toccando un oggetto
-                                HandController.Instance.CollisionAction(action, transition, obj);
-                                break;
-                            case ("EnterTrigger", "InTrigger"): //chiamo quando entro in un qualche zona trigger
-                            case ("ExitTrigger", "OutTrigger"): //chiamo quando esco da qualche zona trigger
-                                HeadController.Instance.InTrigger(action, transition, obj);
-                                break;
                             case ("MoveCubeDown", "Grabbed"):
                             case ("MoveCubeUp", "Grabbed"):
                                 ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
@@ -588,6 +391,7 @@ namespace AB.Manager.Action
                         HandController.Instance.Reset();
                         ManipulableManager.Instance.Reset();
                         HeadController.Instance.GlobalReset();
+                        ord = 0;
                         //ResetButtons(buttons);
                         break;
                     }

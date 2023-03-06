@@ -9,7 +9,7 @@ namespace AB.Manager.Prova
     public class Prova1 : MonoBehaviour
     {
         // Start is called before the first frame update
-        public static Prova1 Instance { get; private set; } = new Prova1();
+        public static Prova1 Instance { get; private set; } 
 
         private bool allCondition = true;
 
@@ -18,6 +18,11 @@ namespace AB.Manager.Prova
         List<GameObject> listOfButtons = new List<GameObject>();
 
         public InstanceController instatiator;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         public void Initialize(List<string> tagsList, List<GameObject> listOfButtons)
         {
@@ -53,7 +58,7 @@ namespace AB.Manager.Prova
             }
             else //se il target è un oggetto qualsiasi
             {
-                if (obj.name == action.Target) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
+                if (obj.name == action.Target) //se il bottone che è stato cliccato è il target dell'azione
                 {
                     action.Triggered = true;
                 }
@@ -82,7 +87,8 @@ namespace AB.Manager.Prova
 
                     allCondition = true;
 
-                    if(excluded != null) //ho qualcosa di escluso
+                    //gestione caso di GameObjects/gruppo di tag esclusi 
+                    if(excluded != null) 
                     {
                         if (tags.Contains(excluded)) //ciò che è escluso è un gruppo di tag
                         {
@@ -99,30 +105,46 @@ namespace AB.Manager.Prova
                                 {
                                     dictionaryOfButtons[but] = true;
                                 }
+
                             }
                         }
                     }
-                    foreach (var button in dictionaryOfButtons.ToList()) //scorro tutti i bottoni
+
+                    /*
+                    //gestione caso di bottoni non attivi (di default quindi settati a true)
+                    foreach (var but in listOfButtons)
                     {
-                        if (!button.Value == true | !allCondition) //condizione per verificare se tutti i bottoni siano stati pigiati
+                        if (!but.activeSelf)
                         {
-                            allCondition = false;
-                            break; //appena allCondition diventa falsa non devo più andare avanti
+                            dictionaryOfButtons[but] = true;
                         }
 
+                    }*/
+
+                    foreach (var button in dictionaryOfButtons.ToList()) //scorro tutti i bottoni
+                    {
+                        if (button.Key.activeSelf) //check se sia attivo o meno
+                        {
+                            if (!button.Value == true | !allCondition) //condizione per verificare se tutti i bottoni siano stati pigiati
+                            {
+                                allCondition = false;
+                                break; //appena allCondition diventa falsa non devo più andare avanti
+                            }
+                        }
                     }
-                    if (allCondition && !obj.CompareTag(excluded))
+                    if (allCondition && !obj.tag.Equals(excluded))
                     {
                         action.Triggered = true;
                     }
                     break;
+
                 case "ANY": //qui quando clicco un bottone qualsiasi (ANY/But3), ANY/Modificabile
 
                     allCondition = false;
 
                     foreach (var button in dictionaryOfButtons.ToList()) //scorro tutti i bottoni
                     {
-                        if (button.Value == true && !obj.name.Equals(excluded) && !obj.CompareTag(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
+                        if (button.Value == true && !obj.name.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
                         {
                             allCondition = true;
                             break;
@@ -140,7 +162,7 @@ namespace AB.Manager.Prova
                     allCondition = true;
                     foreach(var but in listOfButtons)
                     {
-                        if (but.name.Equals(excluded) || but.activeSelf == false) //|| but.activeSelf==false
+                        if (but.name.Equals(excluded) || but.activeSelf == false) 
                         {
                             dictionaryOfButtons[but] = true;
                         }

@@ -46,10 +46,13 @@ namespace AB.Manager.FSM
         public ActionManager actionManager;
         public Prova1 prova1;
 
-
         public static FSMManager Instance { get; private set; }
 
-        
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         public void Start()
         {
             instatiator = InstanceController.Instance;
@@ -80,8 +83,6 @@ namespace AB.Manager.FSM
             manipulableManager.Initialize(tags, instatiator.ManipulableObject);
             headController.Initialize(tags, instatiator.TriggerObject);
             prova1.Initialize(tags, instatiator.ButtonObject);
-
-
 
         }
 
@@ -144,7 +145,6 @@ namespace AB.Manager.FSM
             
         }
 
-        //TODO? Un OnHandTriggerExit
 
         private void OnHeadTriggerEnter(GameObject obj) //chiamato ogni volta che la testa collide con qualcosa
         {
@@ -497,12 +497,20 @@ namespace AB.Manager.FSM
                         target.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
                     break;
                 case "SetActive":
-                    target.SetActive(true);
-                    InteractController.Instance.AddListener(target);
+                    if (!target.activeSelf)
+                    {
+                        
+                        target.SetActive(true);
+                        InteractController.Instance.AddListener(target);
+                    }
                     break;
                 case "SetInactive":
-                    target.SetActive(false);
-                    InteractController.Instance.RemoveListener(target);
+                    if (target.activeSelf)
+                    {
+                        handController.isModified = true;
+                        target.SetActive(false);
+                        InteractController.Instance.RemoveListener(target);
+                    }
                     break;
                 case "Translate":
                     if (target.activeSelf)

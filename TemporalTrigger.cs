@@ -5,8 +5,13 @@ namespace AB.Trigger.Temporal
 {
     public class TemporalTrigger : MonoBehaviour
     {
-        public static TemporalTrigger Instance { get; private set; } = new TemporalTrigger();
-        
+        public static TemporalTrigger Instance { get; private set; }
+
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         public (string trans, float trashold, bool isPres)  Info(FSMState state)
         {
             string trans = null;

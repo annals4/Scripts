@@ -11,12 +11,13 @@ namespace AB.Controller.Hand
 {
     public class HandController : MonoBehaviour
     {
-        public static HandController Instance { get; private set; } = new HandController();
+        public static HandController Instance { get; private set; }
 
         
         private bool allCondition = true;
         List<string> tags;
-        public Dictionary<string, bool> manipulableObjects;
+        public List<GameObject> listOfManipulable = new List<GameObject>();
+        public Dictionary<GameObject, bool> dictionaryOfManipulable;
 
         public InstanceController instatiator;
         public FSMManager fsm;
@@ -24,7 +25,12 @@ namespace AB.Controller.Hand
         public Action<GameObject> Col;
         public delegate void OtherObjectChangedEventHandler(GameObject obj); //define a delegate
         public static event OtherObjectChangedEventHandler HandTrigger; //define an event based on that delegate
+        public bool isModified = false;
 
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         // Start is called before the first frame update
         void Start()
@@ -32,108 +38,48 @@ namespace AB.Controller.Hand
             instatiator = InstanceController.Instance;
             fsm = FSMManager.Instance;
         }
-        public void Initialize(List<string> tagsList, List<GameObject> manObj)
+        public void Initialize(List<string> tagsList, List<GameObject> listOfManipulable)
         {
             tags = tagsList;
-            manipulableObjects = GetManipulable(manObj);
+            dictionaryOfManipulable = GetManipulable(listOfManipulable);
+            this.listOfManipulable = listOfManipulable;
         }
 
-        public Dictionary<string,bool> GetManipulable(List<GameObject> man)
+        public Dictionary<GameObject,bool> GetManipulable(List<GameObject> listOfManipulable)
         {
-            Dictionary<string, bool> ob = new Dictionary<string, bool>();
-            foreach (var obj in man)
+            Dictionary<GameObject, bool> manipulable = new Dictionary<GameObject, bool>();
+            foreach (var obj in listOfManipulable)
             {
-                ob.Add(obj.name, false);
+                manipulable.Add(obj, false);
             }
-            return ob;
+            return manipulable;
         }
 
         public void OnTriggerEnter(Collider other)
-         {
+        {
+            if (isModified)
+            {
+
+                isModified = false;
+                return;
+            }
+
             HandTrigger?.Invoke(other.gameObject); //this invokes our event
 
         }
-        /// <summary>
-        /// Il target può essere:
-        /// - un oggetto qualsiasi
-        /// - le parole chiave ANY/ALL
-        /// - un gruppo di oggetti identificato con il tag
-        /// - ALL/tag meno un oggetto specifico o un tag specifico
-        /// </summary>
-        /// <param name="transition"></param>
-        /// <param name="action"></param>
-        /// <param name="objId"></param>
-        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+
+        public void OnTriggerExit(Collider other)
         {
-            string objId = obj.name;
-
-            manipulableObjects[objId] = true; //diventa vero quando tocco un oggetto
-
-            switch (target)
-            {
-                case "ALL": //in questo caso quando devo aver toccato tutti gli oggetti
-
-                    allCondition = true;
-
-                    if (excluded != null && !tags.Contains(excluded))
-                    {
-                        manipulableObjects[excluded] = true;
-                    }
-                    else if (tags.Contains(excluded))
-                    {
-                        foreach (var ex in GameObject.FindGameObjectsWithTag(excluded))
-                        {
-                            manipulableObjects[ex.name] = true;
-                        }
-                    }
-                    foreach (var objm in manipulableObjects.ToList()) //scorro tutti gli oggetti manipolabili
-                    {
-                        if (!objm.Value == true | !allCondition) //condizione per verificare se tutti gli oggetti siano stati toccati
-                        {
-                            allCondition = false;
-                            break; //appena allCondition diventa falsa non devo più andare avanti
-                        }
-
-                    }
-                    if (allCondition && !obj.tag.Equals(excluded))
-                    {
-                        action.Triggered = true;
-                    }
-                    break;
-                case "ANY": //qui quando clicco un bottone qualsiasi (ANY/But3), ANY/Modificabile
-
-                    allCondition = false;
-
-                    foreach (var man in manipulableObjects.ToList()) //scorro tutti i bottoni
-                    {
-                        if (man.Value == true && !objId.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
-                        {
-                            allCondition = true;
-                            break;
-                        }
-
-                    }
-                    if (allCondition)
-                    {
-                        action.Triggered = true;
-                    }
-                    break;
-                default: //NB: non ha senso escludere un tag da un altro tag (quindi tipo TAG1/TAG2) poiché i tag non si racchiudono
-                    if (obj.tag.Equals(target) && !objId.Equals(excluded)) //se il tag dell'oggetto cliccato è quello desiderato e l'oggetto non è escluso
-                    {
-                        action.Triggered = true;
-                    }
-                    break;
-            }
-
+            //HandTrigger?.Invoke(other.gameObject); //this invokes our event
 
         }
 
-        public void ResetManipulable(Dictionary<string, bool> manipul)
+
+        public void ResetManipulable(Dictionary<GameObject, bool> dictionaryOfManipulable)
         {
-            foreach (var obj in manipul.ToList()) //scorro tutti i bottoni
+            foreach (var obj in dictionaryOfManipulable.ToList()) //scorro tutti i bottoni
             {
-                manipul[obj.Key] = false;
+                dictionaryOfManipulable[obj.Key] = false;
             }
 
         }
@@ -158,9 +104,113 @@ namespace AB.Controller.Hand
             }
         }
 
+        /// <summary>
+        /// Il target può essere:
+        /// - un oggetto qualsiasi
+        /// - le parole chiave ANY/ALL
+        /// - un gruppo di oggetti identificato con il tag
+        /// - ALL/tag meno un oggetto specifico o un tag specifico
+        /// </summary>
+        /// <param name="transition"></param>
+        /// <param name="action"></param>
+        /// <param name="objId"></param>
+        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+        {
+            dictionaryOfManipulable[obj] = true; //diventa vero quando tocco un oggetto
+
+            switch (target)
+            {
+                case "ALL": //in questo caso quando devo aver toccato tutti gli oggetti
+
+                    allCondition = true;
+
+                    if(excluded != null)
+                    {
+                        if (tags.Contains(excluded)) //ciò che è escluso è un gruppo di tag
+                        {
+                            foreach (var ex in GameObject.FindGameObjectsWithTag(excluded)) //scorro tutti i gameobject con quel tag
+                            {
+                                dictionaryOfManipulable[ex] = true;
+                            }
+                        }
+                        else //l'escluso è un gameobject
+                        {
+                            foreach (var manipulableObj in listOfManipulable)
+                            {
+                                if (manipulableObj.name.Equals(excluded))
+                                {
+                                    dictionaryOfManipulable[manipulableObj] = true;
+                                }
+
+                            }
+                        }
+                    }
+                    
+                    foreach (var dictionaryObj in dictionaryOfManipulable.ToList()) //scorro tutti i bottoni
+                    {
+                        if (dictionaryObj.Key.activeSelf) //check se sia attivo o meno
+                        {
+                            if (!dictionaryObj.Value == true | !allCondition) //condizione per verificare se tutti i bottoni siano stati pigiati
+                            {
+                                allCondition = false;
+                                break; //appena allCondition diventa falsa non devo più andare avanti
+                            }
+                        }
+                    }
+                    if (allCondition && !obj.tag.Equals(excluded))
+                    {
+                        action.Triggered = true;
+                    }
+                    break;
+
+                case "ANY": //qui quando clicco un bottone qualsiasi (ANY/But3), ANY/Modificabile
+
+                    allCondition = false;
+
+                    foreach (var dictionaryObj in dictionaryOfManipulable.ToList()) //scorro tutti i bottoni
+                    {
+                        if (dictionaryObj.Value == true && !obj.name.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
+                        {
+                            allCondition = true;
+                            break;
+                        }
+
+                    }
+                    if (allCondition)
+                    {
+                        action.Triggered = true;
+                    }
+                    break;
+                default: //NB: non ha senso escludere un tag da un altro tag (quindi tipo TAG1/TAG2) poiché i tag non si racchiudono
+                    allCondition = true;
+                    foreach (var manipulableObj in listOfManipulable)
+                    {
+                        if (manipulableObj.name.Equals(excluded) || manipulableObj.activeSelf == false)
+                        {
+                            dictionaryOfManipulable[manipulableObj] = true;
+                        }
+                    }
+                    foreach (var dictionaryObj in dictionaryOfManipulable)
+                    {
+                        if (dictionaryObj.Key.CompareTag(target) && dictionaryObj.Value == false) //l'oggetto ha il tag del target ed il suo valore è true (è stato toccato o è excluded)
+                        {
+                            allCondition = false;
+                            break;
+                        }
+                    }
+                    if (allCondition)
+                    {
+                        action.Triggered = true;
+                    }
+                    break;
+            }
+
+
+        }
+
         public void Reset()
         {
-            ResetManipulable(manipulableObjects);
+            ResetManipulable(dictionaryOfManipulable);
         }
     }
 }

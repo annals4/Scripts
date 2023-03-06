@@ -7,7 +7,7 @@ namespace AB.Manager.Manipulable
 {
     public class ManipulableManager : MonoBehaviour
     {
-        public static ManipulableManager Instance { get; private set; } = new ManipulableManager();
+        public static ManipulableManager Instance { get; private set; } 
 
         private bool allCondition = true;
 
@@ -15,6 +15,11 @@ namespace AB.Manager.Manipulable
 
         List<string> tags;
         public Dictionary<string, bool> manipublableObjDictionary;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         public void Initialize(List<string> tagsList, List<GameObject> manipulableObjList)
         {
