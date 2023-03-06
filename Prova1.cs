@@ -19,10 +19,6 @@ namespace AB.Manager.Prova
 
         public InstanceController instatiator;
 
-        void Start()
-        {
-        }
-
         public void Initialize(List<string> tagsList, List<GameObject> listOfButtons)
         {
             tags = tagsList;
@@ -144,7 +140,7 @@ namespace AB.Manager.Prova
                     allCondition = true;
                     foreach(var but in listOfButtons)
                     {
-                        if (but.name.Equals(excluded))
+                        if (but.name.Equals(excluded) || but.activeSelf == false) //|| but.activeSelf==false
                         {
                             dictionaryOfButtons[but] = true;
                         }

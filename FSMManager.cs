@@ -61,7 +61,7 @@ namespace AB.Manager.FSM
             prova1 = Prova1.Instance;
 
 
-            fsm = ParseJson("/Resources/Json/Tester1.json"); //Insert the path of the Json that you want to parse
+            fsm = ParseJson("/Resources/Json/Tester2.json"); //Insert the path of the Json that you want to parse
             tags = GetTags(fsm.ListOfObjects);
 
             InitializeFSM(fsm);
@@ -112,6 +112,7 @@ namespace AB.Manager.FSM
             {
                 this.machine.Fire(transitionFired);
                 Debug.Log("Transition " + transitionFired + " fired.");
+                Debug.Log("CurrentState: " + currentState.Name);
             }
             objCoordBeforeGrabbing[obj.name] = releaseCoord; //aggiorno la posizione in cui è rilasciato
             Debug.Log("Moved " + obj.name + " to position " + releaseCoord);
@@ -125,6 +126,7 @@ namespace AB.Manager.FSM
             {
                 this.machine.Fire(transitionFired);
                 Debug.Log("Transition " + transitionFired + " fired.");
+                Debug.Log("CurrentState: " + currentState.Name);
             }
             
         }
@@ -137,6 +139,7 @@ namespace AB.Manager.FSM
             {
                 this.machine.Fire(transitionFired);
                 Debug.Log("Transition " + transitionFired + " fired.");
+                Debug.Log("CurrentState: " + currentState.Name);
             }
             
         }
@@ -150,6 +153,7 @@ namespace AB.Manager.FSM
             {
                 this.machine.Fire(transitionFired);
                 Debug.Log("Transition " + transitionFired + " fired.");
+                Debug.Log("CurrentState: " + currentState.Name);
             }
         }
 
@@ -160,6 +164,7 @@ namespace AB.Manager.FSM
             {
                 this.machine.Fire(transitionFired);
                 Debug.Log("Transition " + transitionFired + " fired.");
+                Debug.Log("CurrentState: " + currentState.Name);
             }
         }
 
@@ -451,7 +456,7 @@ namespace AB.Manager.FSM
                         {
                             foreach (var o in instatiator.AnimationObject)
                             {
-                                if (o.name.Equals(target))
+                                if (o.name.Equals(target) && o.activeSelf)
                                 {
                                     StartAnimation(o, obj.Material);
                                 }
@@ -484,10 +489,12 @@ namespace AB.Manager.FSM
             switch (action.fsmAction) //azione che verrà effettuata su target
             {
                 case "TurnBlue":
-                    target.GetComponent<Renderer>().material.color = new Color(0, 0, 1, 1);
+                    if (target.activeSelf)
+                        target.GetComponent<Renderer>().material.color = new Color(0, 0, 1, 1);
                     break;
                 case "TurnRed":
-                    target.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
+                    if (target.activeSelf)
+                        target.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
                     break;
                 case "SetActive":
                     target.SetActive(true);
@@ -498,13 +505,16 @@ namespace AB.Manager.FSM
                     InteractController.Instance.RemoveListener(target);
                     break;
                 case "Translate":
-                    StartCoroutine(LERPtransl(target, action));
+                    if (target.activeSelf)
+                        StartCoroutine(LERPtransl(target, action));
                     break;
                 case "Rotate":
-                    StartCoroutine(LERProt(target, action));
+                    if (target.activeSelf)
+                        StartCoroutine(LERProt(target, action));
                     break;
                 case "Scaling":
-                    StartCoroutine(LERPscale(target, action));
+                    if (target.activeSelf)
+                        StartCoroutine(LERPscale(target, action));
                     break;
                 default:
                     break;

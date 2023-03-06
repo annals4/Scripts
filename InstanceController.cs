@@ -36,7 +36,7 @@ namespace AB.Controller.Instatiator
 
         private void Awake()
         {
-            FSMModel json = ParseJson("/Resources/Json/Tester1.json");
+            FSMModel json = ParseJson("/Resources/Json/Tester2.json");
             Instance = this;
 
             CheckMaterialCoherence(json);
