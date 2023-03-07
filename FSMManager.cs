@@ -19,6 +19,9 @@ using AB.Manager.Manipulable;
 using AB.Manager.Action;
 using AB.Trigger.Temporal;
 using AB.Manager.Prova;
+using static UnityEngine.GraphicsBuffer;
+using Microsoft.MixedReality.Toolkit.UI;
+using Newtonsoft.Json.Linq;
 
 namespace AB.Manager.FSM
 {
@@ -79,10 +82,10 @@ namespace AB.Manager.FSM
             HeadController.HeadTriggerExit += OnHeadTriggerExit;
 
             ButtonsManager.Instance.Initialize(fsm, tags);
-            handController.Initialize(tags, instatiator.ManipulableObject);
-            manipulableManager.Initialize(tags, instatiator.ManipulableObject);
-            headController.Initialize(tags, instatiator.TriggerObject);
-            prova1.Initialize(tags, instatiator.ButtonObject);
+            handController.Initialize(tags, instatiator.ListOfElement3D);
+            manipulableManager.Initialize(tags, instatiator.ListOfElement3D);
+            headController.Initialize(tags, instatiator.ListOfTriggers);
+            prova1.Initialize(tags, instatiator.ListOfButtons);
 
         }
 
@@ -294,7 +297,7 @@ namespace AB.Manager.FSM
 
             tempTrigg = temporalTrigger.Info(currentState).isPres;//se isPres è true significa che nello stato sono presenti delle transizioni che sono trigger temporali 
 
-            if (action.fsmAction != null) 
+            if (action.FsmAction != null) 
             {
                 var t = action.Target.Split(':');
                 var target = t[0];
@@ -304,8 +307,8 @@ namespace AB.Manager.FSM
                     case "ALL": //tutti gli oggetti
                         switch (action.TargetType)
                         {
-                            case "ManipulableObject":
-                                foreach (var obj in instatiator.ManipulableObject)
+                            case "Element3D":
+                                foreach (var obj in instatiator.ListOfElement3D)
                                 {
                                     if (!obj.name.Equals(excluded) && !obj.tag.Equals(excluded)) //check se l'oggetto è escluso o meno
                                     {
@@ -314,7 +317,7 @@ namespace AB.Manager.FSM
                                 }
                                 break;
                             case "ButtonObject":
-                                foreach (var obj in instatiator.ButtonObject)
+                                foreach (var obj in instatiator.ListOfButtons)
                                 {
                                     if (!obj.name.Equals(excluded) && !obj.tag.Equals(excluded))
                                     {
@@ -323,7 +326,7 @@ namespace AB.Manager.FSM
                                 }
                                 break;
                             case "TriggerObject":
-                                foreach (var obj in instatiator.TriggerObject)
+                                foreach (var obj in instatiator.ListOfTriggers)
                                 {
                                     if (!obj.name.Equals(excluded) && !obj.tag.Equals(excluded))
                                     {
@@ -339,14 +342,14 @@ namespace AB.Manager.FSM
                         Random R = new();
                         switch (action.TargetType)
                         {
-                            case "ManipulableObject":
-                                int rand = R.Next(0, instatiator.ManipulableObject.Count()); //rand è un numero randomico tra gli indici della lista di oggetti Manipulable
-                                GameObject mn = instatiator.ManipulableObject.ElementAt(rand);
+                            case "Element3D":
+                                int rand = R.Next(0, instatiator.ListOfElement3D.Count()); //rand è un numero randomico tra gli indici della lista di oggetti Manipulable
+                                GameObject mn = instatiator.ListOfElement3D.ElementAt(rand);
                                 var time = currentTime;
                                 while (mn.name.Equals(excluded) | mn.tag.Equals(excluded))
                                 {
-                                    rand = R.Next(0, instatiator.ManipulableObject.Count());
-                                    mn = instatiator.ManipulableObject.ElementAt(rand);
+                                    rand = R.Next(0, instatiator.ListOfElement3D.Count());
+                                    mn = instatiator.ListOfElement3D.ElementAt(rand);
                                     if (currentTime - time > 180f)
                                     {
                                         break; //timeout nel caso in cui il target sia un manipulableobject ma non ne trovo nessuno
@@ -355,13 +358,13 @@ namespace AB.Manager.FSM
                                 SwitchAction(action, mn);
                                 break;
                             case "ButtonObject":
-                                int rand2 = R.Next(0, instatiator.ButtonObject.Count());
-                                GameObject bt = instatiator.ButtonObject.ElementAt(rand2);
+                                int rand2 = R.Next(0, instatiator.ListOfButtons.Count());
+                                GameObject bt = instatiator.ListOfButtons.ElementAt(rand2);
                                 time = currentTime;
                                 while (bt.name.Equals(excluded) | bt.tag.Equals(excluded))
                                 {
-                                    rand2 = R.Next(0, instatiator.ButtonObject.Count());
-                                    bt = instatiator.ButtonObject.ElementAt(rand2);
+                                    rand2 = R.Next(0, instatiator.ListOfButtons.Count());
+                                    bt = instatiator.ListOfButtons.ElementAt(rand2);
                                     if (currentTime - time > 180f)
                                     {
                                         break; //timeout nel caso in cui il target sia un manipulableobject ma non ne trovo nessuno
@@ -370,13 +373,13 @@ namespace AB.Manager.FSM
                                 SwitchAction(action, bt);
                                 break;
                             case "TriggerObject":
-                                int rand3 = R.Next(0, instatiator.TriggerObject.Count());
-                                GameObject btr = instatiator.TriggerObject.ElementAt(rand3);
+                                int rand3 = R.Next(0, instatiator.ListOfTriggers.Count());
+                                GameObject btr = instatiator.ListOfTriggers.ElementAt(rand3);
                                 time = currentTime;
                                 while (btr.name.Equals(excluded) | btr.tag.Equals(excluded))
                                 {
-                                    rand2 = R.Next(0, instatiator.TriggerObject.Count());
-                                    bt = instatiator.TriggerObject.ElementAt(rand2);
+                                    rand2 = R.Next(0, instatiator.ListOfTriggers.Count());
+                                    bt = instatiator.ListOfTriggers.ElementAt(rand2);
                                     if (currentTime - time > 180f)
                                     {
                                         break; //timeout nel caso in cui il target sia un manipulableobject ma non ne trovo nessuno
@@ -391,7 +394,7 @@ namespace AB.Manager.FSM
                     default: //target è o un insieme di oggetti con un dato Tag o un singolo Gameobject
                         if (tags.Contains(target))
                         {
-                            foreach (var o in instatiator.SceneObject)
+                            foreach (var o in instatiator.ListOfSceneObj)
                             {
                                 if (!o.name.Equals(excluded) && o.CompareTag(target))
                                 {
@@ -404,8 +407,8 @@ namespace AB.Manager.FSM
                         {
                             switch (action.TargetType)
                             {
-                                case "ManipulableObject":
-                                    foreach (var o in instatiator.ManipulableObject)
+                                case "Element3D":
+                                    foreach (var o in instatiator.ListOfElement3D)
                                     {
                                         if (o.name.Equals(target))
                                         {
@@ -414,7 +417,7 @@ namespace AB.Manager.FSM
                                     }
                                     break;
                                 case "ButtonObject":
-                                    foreach (var o in instatiator.ButtonObject)
+                                    foreach (var o in instatiator.ListOfButtons)
                                     {
                                         if (o.name.Equals(target))
                                         {
@@ -423,7 +426,7 @@ namespace AB.Manager.FSM
                                     }
                                     break;
                                 case "TriggerObject":
-                                    foreach (var o in instatiator.TriggerObject)
+                                    foreach (var o in instatiator.ListOfTriggers)
                                     {
                                         if (o.name.Equals(target))
                                         {
@@ -432,7 +435,7 @@ namespace AB.Manager.FSM
                                     }
                                     break;
                                 case "AnimationObject":
-                                    foreach (var o in instatiator.AnimationObject)
+                                    foreach (var o in instatiator.ListOfAnimationObj)
                                     {
                                         if (o.name.Equals(target))
                                         {
@@ -454,7 +457,7 @@ namespace AB.Manager.FSM
                     {
                         if(obj.Type.Equals("AnimationObject") && obj.ObjectName.Equals(target))
                         {
-                            foreach (var o in instatiator.AnimationObject)
+                            foreach (var o in instatiator.ListOfAnimationObj)
                             {
                                 if (o.name.Equals(target) && o.activeSelf)
                                 {
@@ -470,7 +473,7 @@ namespace AB.Manager.FSM
                 }
                 if (action.TargetType.Equals("Audio"))
                 {
-                    foreach(var obj in instatiator.AudioObject)
+                    foreach(var obj in instatiator.ListOfAudioClips)
                     {
                         if (obj.name.Equals(target))
                         {
@@ -486,8 +489,36 @@ namespace AB.Manager.FSM
 
         public void SwitchAction(FSMAction action, GameObject target)
         {
-            switch (action.fsmAction) //azione che verrà effettuata su target
+            switch (action.FsmAction) //azione che verrà effettuata su target
             {
+                case "SetActive":
+                    if (!target.activeSelf)
+                    {
+                        target.SetActive(true);
+                        InteractController.Instance.AddListener(target);
+                        Renderer rend = target.GetComponent<Renderer>();
+                    }
+                    break;
+                case "SetInactive":
+                    if (target.activeSelf)
+                    {
+                        if(target.GetComponent<PressableButtonHoloLens2>() == null) //non ho un bottone
+                        {
+                            handController.isModified = true;
+                        }
+                        target.SetActive(false);
+                        InteractController.Instance.RemoveListener(target);
+                    }
+                    break;
+                case "SlowlyAppear":
+                    StartCoroutine(FadeInOut(target, 1f)); //da aggiustare
+                    break;
+                case "SlowlyDisappear":
+                    if (target.activeSelf)
+                    {
+                        StartCoroutine(FadeInOut(target, 0f));
+                    }
+                    break;
                 case "TurnBlue":
                     if (target.activeSelf)
                         target.GetComponent<Renderer>().material.color = new Color(0, 0, 1, 1);
@@ -495,22 +526,6 @@ namespace AB.Manager.FSM
                 case "TurnRed":
                     if (target.activeSelf)
                         target.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
-                    break;
-                case "SetActive":
-                    if (!target.activeSelf)
-                    {
-                        
-                        target.SetActive(true);
-                        InteractController.Instance.AddListener(target);
-                    }
-                    break;
-                case "SetInactive":
-                    if (target.activeSelf)
-                    {
-                        handController.isModified = true;
-                        target.SetActive(false);
-                        InteractController.Instance.RemoveListener(target);
-                    }
                     break;
                 case "Translate":
                     if (target.activeSelf)
@@ -594,6 +609,42 @@ namespace AB.Manager.FSM
 
         }
 
+        IEnumerator FadeInOut(GameObject target, float value)
+        {
+            if (target.GetComponent<PressableButtonHoloLens2>() != null) //caso bottone
+            {
+                PressableButtonHoloLens2 button = target.GetComponent<PressableButtonHoloLens2>();
+                yield return null;
+            }
+
+            Renderer rend = target.GetComponent<Renderer>();
+
+            // Get the initial alpha value of the object's material
+            float alpha = rend.material.color.a;
+            float fadeTime = 2f;
+            float updatesPerSecond = 60f;
+            float updateInterval = 1f / updatesPerSecond;
+            
+            // Gradually decrease the alpha value to 0 over time
+            for (float t = 0.0f; t < fadeTime; t += updateInterval)
+            {
+                Color newColor = new Color(rend.material.color.r, rend.material.color.g, rend.material.color.b, Mathf.Lerp(alpha, value, t / fadeTime));
+                rend.material.color = newColor;
+                yield return new WaitForSeconds(updateInterval);
+            }
+            
+            if (value == 0f)
+            {
+                if (target.GetComponent<PressableButtonHoloLens2>() == null) //non ho un bottone
+                {
+                    handController.isModified = true;
+                }
+                target.SetActive(false);
+                InteractController.Instance.RemoveListener(target);
+            }
+
+            
+        }
 
 
         /// <summary>

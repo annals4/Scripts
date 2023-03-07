@@ -72,7 +72,7 @@ namespace AB.Model.FSM
         [Serializable]
         public class FSMAction
         {
-            public string fsmAction;
+            public string FsmAction;
             public string Target; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE una delle precedenti:una delle precedenti (':' significa execpt)
             public bool Triggered;
             public string TargetType; //****new
@@ -105,13 +105,35 @@ namespace AB.Model.FSM
             ORDERED,
             TemporalTrigger
         }
-        public enum ObjType
+
+        
+        public enum Type
         {
-            PhysicalObject,
-            UIObject,
-            Animation
+            Element3D,
+            UI,
+            Animation,
+            Trigger
+
         }
 
+        
+        public enum FsmAction
+        {
+            TurnBlue,
+            TurnRed,
+            SetActive,
+            SetInactive,
+            Translate,
+            Rotate,
+            Scaling,
+            ////
+            ButtonClick, 
+            TouchElement3D,
+            EnterTrigger,
+            ExitTrigger,
+            TriggerCollision
+        }
+        
 
 
     }

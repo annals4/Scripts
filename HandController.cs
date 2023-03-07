@@ -16,8 +16,8 @@ namespace AB.Controller.Hand
         
         private bool allCondition = true;
         List<string> tags;
-        public List<GameObject> listOfManipulable = new List<GameObject>();
-        public Dictionary<GameObject, bool> dictionaryOfManipulable;
+        public List<GameObject> listOfElement3D = new List<GameObject>();
+        public Dictionary<GameObject, bool> dictionaryOfElement3D;
 
         public InstanceController instatiator;
         public FSMManager fsm;
@@ -38,21 +38,21 @@ namespace AB.Controller.Hand
             instatiator = InstanceController.Instance;
             fsm = FSMManager.Instance;
         }
-        public void Initialize(List<string> tagsList, List<GameObject> listOfManipulable)
+        public void Initialize(List<string> tagsList, List<GameObject> listOfElement3D)
         {
             tags = tagsList;
-            dictionaryOfManipulable = GetManipulable(listOfManipulable);
-            this.listOfManipulable = listOfManipulable;
+            dictionaryOfElement3D = CreateDictionary(listOfElement3D);
+            this.listOfElement3D = listOfElement3D;
         }
 
-        public Dictionary<GameObject,bool> GetManipulable(List<GameObject> listOfManipulable)
+        public Dictionary<GameObject,bool> CreateDictionary(List<GameObject> listOfElement3D)
         {
-            Dictionary<GameObject, bool> manipulable = new Dictionary<GameObject, bool>();
-            foreach (var obj in listOfManipulable)
+            Dictionary<GameObject, bool> element3D = new Dictionary<GameObject, bool>();
+            foreach (var obj in listOfElement3D)
             {
-                manipulable.Add(obj, false);
+                element3D.Add(obj, false);
             }
-            return manipulable;
+            return element3D;
         }
 
         public void OnTriggerEnter(Collider other)
@@ -68,18 +68,12 @@ namespace AB.Controller.Hand
 
         }
 
-        public void OnTriggerExit(Collider other)
+
+        public void ResetDictionary(Dictionary<GameObject, bool> dictionaryOfElement3D)
         {
-            //HandTrigger?.Invoke(other.gameObject); //this invokes our event
-
-        }
-
-
-        public void ResetManipulable(Dictionary<GameObject, bool> dictionaryOfManipulable)
-        {
-            foreach (var obj in dictionaryOfManipulable.ToList()) //scorro tutti i bottoni
+            foreach (var obj in dictionaryOfElement3D.ToList()) //scorro tutti i bottoni
             {
-                dictionaryOfManipulable[obj.Key] = false;
+                dictionaryOfElement3D[obj.Key] = false;
             }
 
         }
@@ -116,7 +110,7 @@ namespace AB.Controller.Hand
         /// <param name="objId"></param>
         public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
         {
-            dictionaryOfManipulable[obj] = true; //diventa vero quando tocco un oggetto
+            dictionaryOfElement3D[obj] = true; //diventa vero quando tocco un oggetto
 
             switch (target)
             {
@@ -130,23 +124,23 @@ namespace AB.Controller.Hand
                         {
                             foreach (var ex in GameObject.FindGameObjectsWithTag(excluded)) //scorro tutti i gameobject con quel tag
                             {
-                                dictionaryOfManipulable[ex] = true;
+                                dictionaryOfElement3D[ex] = true;
                             }
                         }
                         else //l'escluso è un gameobject
                         {
-                            foreach (var manipulableObj in listOfManipulable)
+                            foreach (var element3D in listOfElement3D)
                             {
-                                if (manipulableObj.name.Equals(excluded))
+                                if (element3D.name.Equals(excluded))
                                 {
-                                    dictionaryOfManipulable[manipulableObj] = true;
+                                    dictionaryOfElement3D[element3D] = true;
                                 }
 
                             }
                         }
                     }
                     
-                    foreach (var dictionaryObj in dictionaryOfManipulable.ToList()) //scorro tutti i bottoni
+                    foreach (var dictionaryObj in dictionaryOfElement3D.ToList()) //scorro tutti i bottoni
                     {
                         if (dictionaryObj.Key.activeSelf) //check se sia attivo o meno
                         {
@@ -167,7 +161,7 @@ namespace AB.Controller.Hand
 
                     allCondition = false;
 
-                    foreach (var dictionaryObj in dictionaryOfManipulable.ToList()) //scorro tutti i bottoni
+                    foreach (var dictionaryObj in dictionaryOfElement3D.ToList()) //scorro tutti i bottoni
                     {
                         if (dictionaryObj.Value == true && !obj.name.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
                         {
@@ -183,14 +177,14 @@ namespace AB.Controller.Hand
                     break;
                 default: //NB: non ha senso escludere un tag da un altro tag (quindi tipo TAG1/TAG2) poiché i tag non si racchiudono
                     allCondition = true;
-                    foreach (var manipulableObj in listOfManipulable)
+                    foreach (var element3D in listOfElement3D)
                     {
-                        if (manipulableObj.name.Equals(excluded) || manipulableObj.activeSelf == false)
+                        if (element3D.name.Equals(excluded) || element3D.activeSelf == false)
                         {
-                            dictionaryOfManipulable[manipulableObj] = true;
+                            dictionaryOfElement3D[element3D] = true;
                         }
                     }
-                    foreach (var dictionaryObj in dictionaryOfManipulable)
+                    foreach (var dictionaryObj in dictionaryOfElement3D)
                     {
                         if (dictionaryObj.Key.CompareTag(target) && dictionaryObj.Value == false) //l'oggetto ha il tag del target ed il suo valore è true (è stato toccato o è excluded)
                         {
@@ -210,7 +204,7 @@ namespace AB.Controller.Hand
 
         public void Reset()
         {
-            ResetManipulable(dictionaryOfManipulable);
+            ResetDictionary(dictionaryOfElement3D);
         }
     }
 }

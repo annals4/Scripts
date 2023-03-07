@@ -23,12 +23,12 @@ namespace AB.Controller.Instatiator
         private GameObject o;
         private AudioClip a;
 
-        public List<GameObject> ButtonObject  = new List<GameObject>();
-        public List<GameObject> ManipulableObject = new List<GameObject>();
-        public List<GameObject> SceneObject = new List<GameObject>();
-        public List<GameObject> TriggerObject = new List<GameObject>();
-        public List<GameObject> AnimationObject = new List<GameObject>();
-        public List<AudioClip> AudioObject = new List<AudioClip>();
+        public List<GameObject> ListOfButtons  = new List<GameObject>();
+        public List<GameObject> ListOfElement3D = new List<GameObject>();
+        public List<GameObject> ListOfSceneObj = new List<GameObject>();
+        public List<GameObject> ListOfTriggers = new List<GameObject>();
+        public List<GameObject> ListOfAnimationObj = new List<GameObject>();
+        public List<AudioClip> ListOfAudioClips = new List<AudioClip>();
         public AudioSource audioSource = new AudioSource();
         public static InstanceController Instance { get; private set; }
 
@@ -39,7 +39,6 @@ namespace AB.Controller.Instatiator
             FSMModel json = ParseJson("/Resources/Json/Tester2.json");
             Instance = this;
 
-            CheckMaterialCoherence(json);
             foreach (var obj in json.ListOfObjects)
             {
                 switch (obj.Tag) //da modificare questa parte
@@ -71,7 +70,7 @@ namespace AB.Controller.Instatiator
 
                 switch (obj.Type)
                 {
-                    case "ManipulableObject":
+                    case "Element3D":
                         o.GetComponent<Renderer>().material = Resources.Load<Material>("Material/BaseMaterial/" + obj.Material);
                         o.AddComponent<ObjectManipulator>();
                         o.AddComponent<NearInteractionGrabbable>();
@@ -79,25 +78,25 @@ namespace AB.Controller.Instatiator
                         o.AddComponent<Rigidbody>();
                         o.GetComponent<Rigidbody>().isKinematic = true;
 
-                        ManipulableObject.Add(o);
+                        ListOfElement3D.Add(o);
                         break;
                     case "TriggerObject":
                         o.GetComponent<Renderer>().material = Resources.Load<Material>("Material/BaseMaterial/" + obj.Material);
                         o.GetComponent<Collider>().isTrigger = true;
                         o.AddComponent<Rigidbody>();
                         o.GetComponent<Rigidbody>().isKinematic = true;
-                        TriggerObject.Add(o);
+                        ListOfTriggers.Add(o);
                         break;
                     case "ButtonObject":
-                        ButtonObject.Add(o);
+                        ListOfButtons.Add(o);
                         break;
                     case "AnimationObject":
-                        AnimationObject.Add(o);
+                        ListOfAnimationObj.Add(o);
                         break;
                     default:
                         break;
                 }
-                SceneObject.Add(o); 
+                ListOfSceneObj.Add(o); 
 
                 
             }
@@ -107,7 +106,7 @@ namespace AB.Controller.Instatiator
                 //creo l'audioclip
                 a = Resources.Load<AudioClip>(aud.Path); //aud è il path dell'audio che carico
                 a.name = aud.Name;
-                AudioObject.Add(a);
+                ListOfAudioClips.Add(a);
                 //creo l'oggetto che mi contiene l'audio source
                 o = Instantiate(EmptyPrefab, new Vector3(0,0,0), Quaternion.identity);
                 o.AddComponent<AudioSource>();
@@ -118,21 +117,6 @@ namespace AB.Controller.Instatiator
 
         }
 
-        public void CheckMaterialCoherence(FSMModel json) //verifica se i materiali degli oggetti esistono nella lista
-        {
-
-            foreach (var obj in json.ListOfObjects)
-            {
-                if (obj.Type == "ManipulableObject")
-                {
-                    if (!json.ListOfMaterials.Contains(obj.Material))
-                    {
-                        throw new InvalidOperationException("A ManipulableObject cannot have a Material that isn't on the ListOfMaterials ");
-                    }
-                    
-                }
-            }
-        }
 
         
         // Start is called before the first frame update

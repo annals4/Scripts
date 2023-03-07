@@ -65,41 +65,7 @@ namespace AB.Controller.Interactor
                     ReleasedGrabbedObj?.Invoke(o, args.PointerCentroid); //notifies when an object is released
                 });
             }
-            /*
-            //Listener ButtonClick
-            foreach (var I in instatiator.ButtonObject)
-            {
-                if (I.activeSelf)
-                {
-                    GameObject temp = GameObject.Find(I.name);
-                    temp.GetComponent<Interactable>().OnClick
-                        .AddListener(() => {
-                            ButtonClick?.Invoke(temp);
-                            //TODO MANDARE REMOTO
-                        });
-                }
-            }
             
-            //Listener Grab
-            foreach (var M in instatiator.ManipulableObject)
-            {
-                if (M.activeSelf)
-                {
-                    GameObject man = GameObject.Find(M.name);
-                    man.GetComponent<ObjectManipulator>().OnManipulationStarted.AddListener((ManipulationEventData args) =>
-                    {
-                        GrabbedObj?.Invoke(man, args.PointerCentroid); //notifies when an object is grabbed
-                                                                       //da vedere se args può essere utile
-
-                    });
-                    man.GetComponent<ObjectManipulator>().OnManipulationEnded.AddListener((ManipulationEventData args) =>
-                    {
-                        ReleasedGrabbedObj?.Invoke(man, args.PointerCentroid); //notifies when an object is released
-                    });
-                }
-
-            }
-            */
          }
 
         public void RemoveListener(GameObject o)

@@ -259,7 +259,7 @@ namespace AB.Controller.Head
 
         
 
-        public void GlobalReset()
+        public void Reset()
         {
             ResetTriggers(dictionaryOfTriggers);
         }

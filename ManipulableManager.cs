@@ -14,47 +14,47 @@ namespace AB.Manager.Manipulable
         private string firedTransition = null;
 
         List<string> tags;
-        public Dictionary<string, bool> manipublableObjDictionary;
+        public Dictionary<string, bool> dictionaryOfElement3D;
 
         private void Awake()
         {
             Instance = this;
         }
 
-        public void Initialize(List<string> tagsList, List<GameObject> manipulableObjList)
+        public void Initialize(List<string> tagsList, List<GameObject> listOfElement3D)
         {
             tags = tagsList;
-            manipublableObjDictionary = GetManipulable(manipulableObjList);
+            dictionaryOfElement3D = CreateDictionary(listOfElement3D);
         }
 
-        public Dictionary<string, bool> GetManipulable(List<GameObject> manipulableObjList)
+        public Dictionary<string, bool> CreateDictionary(List<GameObject> listOfElement3D)
         {
-            Dictionary<string, bool> manipulableObjDictionary = new Dictionary<string, bool>();
-            foreach (var obj in manipulableObjList)
+            Dictionary<string, bool> dictionaryOfElement3D = new Dictionary<string, bool>();
+            foreach (var obj in listOfElement3D)
             {
-                manipulableObjDictionary.Add(obj.name, false);
+                dictionaryOfElement3D.Add(obj.name, false);
             }
-            return manipulableObjDictionary;
+            return dictionaryOfElement3D;
         }
 
-        public string ManipulationTrigger(GameObject obj, FSMState currentState, Dictionary<string, Vector3> objCoordBeforeGrabbing, Vector3 rPoint)
+        public string ManipulationTrigger(GameObject obj, FSMState currentState, Dictionary<string, Vector3> startingCoord, Vector3 releasedCoord)
         {
             firedTransition = null;
             foreach (var transition in currentState.ListOfTransitions)
             {
                 foreach(var action in transition.ActionsOnTransition)
                 {
-                    switch (action.fsmAction)
+                    switch (action.FsmAction)
                     {
-                        case "MoveSolidDown":
+                        case "MoveElement3DDown":
                             //da gestire i vari casi (attenzione al flip che fa in 0, dove passa a negativo)
-                            if (obj.name == action.Target && (objCoordBeforeGrabbing[obj.name].y-rPoint.y > 0.1))
+                            if (obj.name == action.Target && (startingCoord[obj.name].y-releasedCoord.y > 0.1))
                             {
                                 firedTransition = transition.Name;
                             }
                             break;
-                        case "MoveSolidUp":
-                            if (obj.name == action.Target && (rPoint.y-objCoordBeforeGrabbing[obj.name].y > 0.1))
+                        case "MoveElement3DUp":
+                            if (obj.name == action.Target && (releasedCoord.y-startingCoord[obj.name].y > 0.1))
                             {
                                 firedTransition = transition.Name;
                             }
@@ -68,7 +68,7 @@ namespace AB.Manager.Manipulable
             return firedTransition;
         }
 
-        public void ManipulableAction(FSMAction action, FSMTransition transition, GameObject obj, Dictionary<string, Vector3> startGrab, Vector3 rPoint)
+        public void ManipulableAction(FSMAction action, FSMTransition transition, GameObject obj, Dictionary<string, Vector3> startingCoord, Vector3 releasedCoord)
         {
             var t = action.Target.Split(':');
             var tar = t[0];
@@ -77,18 +77,18 @@ namespace AB.Manager.Manipulable
             //PASSO 1: DISTINGUO IL CASO IN BASE AL TARGET
             if (tar.Equals("ALL") | tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
             {
-                switch (action.fsmAction)
+                switch (action.FsmAction)
                 {
-                    case "MoveSolidUp":
-                        if (obj.name == action.Target && (rPoint.y - startGrab[obj.name].y > 0.1)) //se si verifica la condizione di grab detta dall'azione posso fare un check se triggerarla
+                    case "MoveElement3DUp":
+                        if (obj.name == action.Target && (releasedCoord.y - startingCoord[obj.name].y > 0.1)) //se si verifica la condizione di grab detta dall'azione posso fare un check se triggerarla
                         {
-                            TargetSetting(transition, action, obj, tar, excluded, startGrab, rPoint); //SETTA TRUE sull'azione triggerata
+                            TargetSetting(transition, action, obj, tar, excluded); //SETTA TRUE sull'azione triggerata
                         }
                         break;
-                    case "MoveSolidDown":
-                        if (obj.name == action.Target && (startGrab[obj.name].y - rPoint.y > 0.1))
+                    case "MoveElement3DDown":
+                        if (obj.name == action.Target && (startingCoord[obj.name].y - releasedCoord.y > 0.1))
                         {
-                            TargetSetting(transition, action, obj, tar, excluded, startGrab, rPoint); //SETTA TRUE sull'azione triggerata
+                            TargetSetting(transition, action, obj, tar, excluded); //SETTA TRUE sull'azione triggerata
                         }
                         break;
                     default:
@@ -99,16 +99,16 @@ namespace AB.Manager.Manipulable
             }
             else //se il target è un oggetto qualsiasi
             {
-                switch (action.fsmAction)
+                switch (action.FsmAction)
                 {
-                    case "MoveSolidUp":
-                        if (obj.name == action.Target && (rPoint.y - startGrab[obj.name].y > 0.1))
+                    case "MoveElement3DUp":
+                        if (obj.name == action.Target && (releasedCoord.y - startingCoord[obj.name].y > 0.1))
                         {
                             action.Triggered = true;
                         }
                         break;
-                    case "MoveSolidDown":
-                        if (obj.name == action.Target && (startGrab[obj.name].y - rPoint.y > 0.1))
+                    case "MoveElement3DDown":
+                        if (obj.name == action.Target && (startingCoord[obj.name].y - releasedCoord.y > 0.1))
                         {
                             action.Triggered = true;
                         }
@@ -120,11 +120,11 @@ namespace AB.Manager.Manipulable
             }
         }
 
-        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded, Dictionary<string, Vector3> startGrab, Vector3 rPoint)
+        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
         {
             string objId = obj.name;
 
-            manipublableObjDictionary[objId] = true; //diventa vero poiché la condizione dell'azione è stata verificata
+            dictionaryOfElement3D[objId] = true; //diventa vero poiché la condizione dell'azione è stata verificata
             
             switch (target)
             {
@@ -134,18 +134,18 @@ namespace AB.Manager.Manipulable
 
                     if (excluded != null && !tags.Contains(excluded))
                     {
-                        manipublableObjDictionary[excluded] = true; //vera su tutti gli oggetti esclusi (default)
+                        dictionaryOfElement3D[excluded] = true; //vera su tutti gli oggetti esclusi (default)
                     }
                     else if (tags.Contains(excluded))
                     {
                         foreach (var ex in GameObject.FindGameObjectsWithTag(excluded))
                         {
-                            manipublableObjDictionary[ex.name] = true;
+                            dictionaryOfElement3D[ex.name] = true;
                         }
                     }
-                    foreach (var objm in manipublableObjDictionary.ToList()) //scorro tutti gli oggetti manipolabili
+                    foreach (var dictionaryObj in dictionaryOfElement3D.ToList()) //scorro tutti gli oggetti manipolabili
                     {
-                        if (!objm.Value == true | !allCondition) //condizione per verificare se tutti gli oggetti siano stati toccati
+                        if (!dictionaryObj.Value == true | !allCondition) //condizione per verificare se tutti gli oggetti siano stati toccati
                         {
                             allCondition = false;
                             break; //appena allCondition diventa falsa non devo più andare avanti
@@ -161,9 +161,9 @@ namespace AB.Manager.Manipulable
 
                     allCondition = false;
 
-                    foreach (var man in manipublableObjDictionary.ToList()) //scorro tutti i bottoni
+                    foreach (var dictionaryObj in dictionaryOfElement3D.ToList()) //scorro tutti i bottoni
                     {
-                        if (man.Value == true && !objId.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
+                        if (dictionaryObj.Value == true && !objId.Equals(excluded) && !obj.tag.Equals(excluded)) //entro se pigio un bottone qualsiasi che però sia diverso da quello escluso
                         {
                             allCondition = true;
                             break;
@@ -185,18 +185,18 @@ namespace AB.Manager.Manipulable
 
 
         }
-        public void ResetManipulable(Dictionary<string, bool> manipul)
+        public void ResetDictionary(Dictionary<string, bool> dictionaryOfElement3D)
         {
-            foreach (var obj in manipul.ToList()) //scorro tutti i bottoni
+            foreach (var obj in dictionaryOfElement3D.ToList()) //scorro tutti i bottoni
             {
-                manipul[obj.Key] = false;
+                dictionaryOfElement3D[obj.Key] = false;
             }
 
         }
 
         public void Reset()
         {
-            ResetManipulable(manipublableObjDictionary);
+            ResetDictionary(dictionaryOfElement3D);
         }
     }
 }
