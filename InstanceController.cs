@@ -36,7 +36,7 @@ namespace AB.Controller.Instatiator
 
         private void Awake()
         {
-            FSMModel json = ParseJson("/Resources/Json/Tester2.json");
+            FSMModel json = ParseJson("/Resources/Json/Tester4.json");
             Instance = this;
 
             foreach (var obj in json.ListOfObjects)

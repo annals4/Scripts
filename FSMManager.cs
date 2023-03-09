@@ -40,6 +40,7 @@ namespace AB.Manager.FSM
 
         private int coroutineCounter=0;
         private int coroutineCounterEnter = 0;
+        public bool animated = false;
 
         public Dictionary<string, Vector3> objCoordBeforeGrabbing = new Dictionary<string, Vector3>();
         public Dictionary<string, Vector3> endGrab = new Dictionary<string, Vector3>();
@@ -71,7 +72,7 @@ namespace AB.Manager.FSM
             prova1 = Prova1.Instance;
 
 
-            fsm = ParseJson("/Resources/Json/Tester2.json"); //Insert the path of the Json that you want to parse
+            fsm = ParseJson("/Resources/Json/Tester4.json"); //Insert the path of the Json that you want to parse
             tags = GetTags(fsm.ListOfObjects);
 
             InitializeFSM(fsm);
@@ -466,7 +467,7 @@ namespace AB.Manager.FSM
                         {
                             foreach (var o in instatiator.ListOfAnimationObj)
                             {
-                                if (o.name.Equals(target) && o.activeSelf)
+                                if (o.name.Equals(target)) // && o.activeSelf
                                 {
                                     StartAnimation(o, obj.Material);
                                 }
@@ -562,8 +563,17 @@ namespace AB.Manager.FSM
 
         public void StartAnimation(GameObject target, string path)
         {
+            target.SetActive(true); //da aggiustare
             target.AddComponent<FSMAnimator.FSMAnimator>();
+            animated = true;
             target.GetComponent<FSMAnimator.FSMAnimator>().LoadGltfBinaryFromMemory(path);
+            StartCoroutine(WaitAnimation());
+            //il load è un metodo async ==>coroutine che aspetta che finisce?
+        }
+
+        IEnumerator WaitAnimation()
+        {
+            yield return new WaitUntil(() => (animated == false));
         }
 
         IEnumerator LERPtransl(GameObject o, FSMAction action)
@@ -574,7 +584,6 @@ namespace AB.Manager.FSM
             Vector3 startPosition = o.transform.position; //posizione iniziale dell'oggetto
             Vector3 endPosition = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
             float distanceToTarget = Vector3.Distance(startPosition, endPosition);
-
             //while (timeElapsed < duration)
             //NB: Nel caso sopra faccio relazione alla durata da me indicata (in questo caso però devo aggiustare la velocità, che non può più essere costante ma relazionata alla quantità di spazio che devo percorrere
             //mentre nel caso sotto, a velocità COSTANTE, l'oggetto continua a spostarsi linearmente fino a raggiungere una posizione target

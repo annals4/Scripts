@@ -1,3 +1,4 @@
+using AB.Manager.FSM;
 using GLTFast;
 using System;
 using System.Collections;
@@ -36,6 +37,7 @@ namespace AB.FSMAnimator
             {
                 success = await gltf.InstantiateMainSceneAsync(transform);
             }
+            FSMManager.Instance.animated = false;
         }
     }
 }
