@@ -575,7 +575,10 @@ namespace AB.Manager.FSM
             Vector3 endPosition = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
             float distanceToTarget = Vector3.Distance(startPosition, endPosition);
 
-            while (timeElapsed < duration)
+            //while (timeElapsed < duration)
+            //NB: Nel caso sopra faccio relazione alla durata da me indicata (in questo caso però devo aggiustare la velocità, che non può più essere costante ma relazionata alla quantità di spazio che devo percorrere
+            //mentre nel caso sotto, a velocità COSTANTE, l'oggetto continua a spostarsi linearmente fino a raggiungere una posizione target
+            while (o.transform.position != endPosition)
             {
                 float distanceCovered = timeElapsed * action.MovementParameters.MovementSpeed;
                 float fractionOfJourney = distanceCovered / distanceToTarget;
@@ -584,7 +587,7 @@ namespace AB.Manager.FSM
                 yield return null;
             }
 
-            o.transform.position = endPosition;
+            o.transform.position = endPosition; 
             coroutineCounterEnter--;
         }
 
@@ -597,7 +600,8 @@ namespace AB.Manager.FSM
             Quaternion startRotation = o.transform.rotation;
             Quaternion targetRotation = o.transform.rotation * Quaternion.Euler(targetPos);
 
-            while (timeElapsed < duration)
+            //while (timeElapsed < duration)
+            while(o.transform.rotation != targetRotation)
             {
                 float distanceCovered = timeElapsed * action.MovementParameters.MovementSpeed;
                 o.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, distanceCovered / duration);
@@ -618,7 +622,8 @@ namespace AB.Manager.FSM
             Vector3 endScale = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
             float scaleDifference = Vector3.Distance(startScale, endScale);
 
-            while (timeElapsed < duration)
+            //while (timeElapsed < duration)
+            while(o.transform.localScale != endScale)
             {
                 float distanceCovered = timeElapsed * action.MovementParameters.MovementSpeed;
                 o.transform.localScale = Vector3.Lerp(startScale, endScale, distanceCovered / scaleDifference);
