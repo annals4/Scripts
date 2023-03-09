@@ -22,6 +22,7 @@ using AB.Manager.Prova;
 using static UnityEngine.GraphicsBuffer;
 using Microsoft.MixedReality.Toolkit.UI;
 using Newtonsoft.Json.Linq;
+using UnityEngine.InputSystem.Android;
 
 namespace AB.Manager.FSM
 {
@@ -36,6 +37,9 @@ namespace AB.Manager.FSM
 
         public float initialTime = 0f; //utilizzato per registrare il tempo d'ingresso in uno stato per far partire il counter in caso di trigger temporale
         public bool tempTrigg = false;
+
+        private int coroutineCounter=0;
+        private int coroutineCounterEnter = 0;
 
         public Dictionary<string, Vector3> objCoordBeforeGrabbing = new Dictionary<string, Vector3>();
         public Dictionary<string, Vector3> endGrab = new Dictionary<string, Vector3>();
@@ -177,10 +181,12 @@ namespace AB.Manager.FSM
         public void Update()
         {
             currentTime += 1 * Time.deltaTime; //time update
+            
             if (tempTrigg) //tempTrigg è true se nello stato corrente è presente un trigger temporale
             {
                 StartCoroutine(TemporalTriggerCoroutine());
             }
+            
 
         }
 
@@ -227,8 +233,7 @@ namespace AB.Manager.FSM
                         foreach (var actionEntry in state.ActionsOnEntry)
                         {
                             builder.In(state.Name)
-                                    .ExecuteOnEntry(() => StateActions(actionEntry, state));
-                                    //.ExecuteOnEntry(()=> InteractController.Instance.Listeners());
+                                    .ExecuteOnEntry(() => StartCoroutine(WaitForCoroutine(actionEntry, state)));//.ExecuteOnEntry(() => StateActions(actionEntry, state));
                         }
                     }
                     if(state.ActionsOnExit.Count != 0)
@@ -236,7 +241,8 @@ namespace AB.Manager.FSM
                         foreach (var actionExit in state.ActionsOnExit)
                         {
                             builder.In(state.Name)
-                                    .ExecuteOnExit(() => StateActions(actionExit, state)); //inserito per includere gli effetti delle azioni che si effettuano in uscita dallo stato in cui ci si trova
+                                    .ExecuteOnExit(() => StateActions(actionExit, state));//inserito per includere gli effetti delle azioni che si effettuano in uscita dallo stato in cui ci si trova
+                                     
                         }
                     }
                     if (state.ListOfTransitions.Count != 0)
@@ -245,8 +251,9 @@ namespace AB.Manager.FSM
                         {
                             builder.In(state.Name)
                             .On(transition.Name)
-                                .If(() => CheckExternalCondition(transition.ExternalCondition)).Goto(transition.NextState);
-                        }
+                                .If(() => CheckActiveCoroutine(transition)).Goto(transition.NextState);
+                                //.If(() => CheckActiveCoroutine(coroutineCounter, transition)).Goto(transition.NextState);
+                        }//vedere bene la temporalità delle esecuzioni e sfruttare quella
                     }
                     if (state.InitialState == true)
                     {
@@ -496,7 +503,6 @@ namespace AB.Manager.FSM
                     {
                         target.SetActive(true);
                         InteractController.Instance.AddListener(target);
-                        Renderer rend = target.GetComponent<Renderer>();
                     }
                     break;
                 case "SetInactive":
@@ -510,10 +516,14 @@ namespace AB.Manager.FSM
                         InteractController.Instance.RemoveListener(target);
                     }
                     break;
-                case "SlowlyAppear":
-                    StartCoroutine(FadeInOut(target, 1f)); //da aggiustare
+                case "SlowlyAppear": //al posto di SetActive
+                    //TODO? non so se aggiungere il check per verificare che il materiale dell'oggetto sia 'Fade' o se lasciarlo come assunzione
+                    if (!target.activeSelf)
+                    {
+                        StartCoroutine(FadeInOut(target, 1f)); //da aggiustare
+                    }
                     break;
-                case "SlowlyDisappear":
+                case "SlowlyDisappear": //al posto di SetInactive
                     if (target.activeSelf)
                     {
                         StartCoroutine(FadeInOut(target, 0f));
@@ -521,11 +531,17 @@ namespace AB.Manager.FSM
                     break;
                 case "TurnBlue":
                     if (target.activeSelf)
-                        target.GetComponent<Renderer>().material.color = new Color(0, 0, 1, 1);
+                    {
+                        Renderer rend = target.GetComponent<Renderer>();
+                        rend.material.color = new Color(0, 0, 1, rend.material.color.a);
+                    }
                     break;
                 case "TurnRed":
                     if (target.activeSelf)
-                        target.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
+                    {
+                        Renderer rend = target.GetComponent<Renderer>();
+                        rend.material.color = new Color(1, 0, 0, rend.material.color.a);
+                    }
                     break;
                 case "Translate":
                     if (target.activeSelf)
@@ -552,6 +568,7 @@ namespace AB.Manager.FSM
 
         IEnumerator LERPtransl(GameObject o, FSMAction action)
         {
+            coroutineCounterEnter++;
             float timeElapsed = 0f; //tempo da cui parto
             float duration = action.MovementParameters.MovementDuration; //durata del movimento
             Vector3 startPosition = o.transform.position; //posizione iniziale dell'oggetto
@@ -568,10 +585,12 @@ namespace AB.Manager.FSM
             }
 
             o.transform.position = endPosition;
+            coroutineCounterEnter--;
         }
 
         IEnumerator LERProt(GameObject o, FSMAction action)
         {
+            coroutineCounterEnter++;
             float timeElapsed = 0f; //tempo da cui parto
             float duration = action.MovementParameters.MovementDuration; //durata del movimento
             Vector3 targetPos = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
@@ -586,11 +605,13 @@ namespace AB.Manager.FSM
                 yield return null;
             }
             o.transform.rotation = targetRotation;
+            coroutineCounterEnter--;
 
         }
 
         IEnumerator LERPscale(GameObject o, FSMAction action)
         {
+            coroutineCounterEnter++;
             float timeElapsed = 0f;
             float duration = action.MovementParameters.MovementDuration;
             Vector3 startScale = o.transform.localScale;
@@ -606,11 +627,12 @@ namespace AB.Manager.FSM
             }
 
             o.transform.localScale = endScale;
+            coroutineCounterEnter--;
 
         }
 
         IEnumerator FadeInOut(GameObject target, float value)
-        {
+        {   
             if (target.GetComponent<PressableButtonHoloLens2>() != null) //caso bottone
             {
                 PressableButtonHoloLens2 button = target.GetComponent<PressableButtonHoloLens2>();
@@ -618,6 +640,21 @@ namespace AB.Manager.FSM
             }
 
             Renderer rend = target.GetComponent<Renderer>();
+
+            if (value == 0f) //SlowlyDisappear
+            {
+                coroutineCounter++;
+            }
+            else if (value == 1f) //SlowlyAppear
+            {
+                coroutineCounterEnter++;
+                //faccio in modo che il gameobject sia completamente trasparente prima di attivarlo
+                
+                rend.material.color = new Color(rend.material.color.r, rend.material.color.g, rend.material.color.b, 0f);
+
+                target.SetActive(true);
+                InteractController.Instance.AddListener(target);
+            }
 
             // Get the initial alpha value of the object's material
             float alpha = rend.material.color.a;
@@ -641,11 +678,31 @@ namespace AB.Manager.FSM
                 }
                 target.SetActive(false);
                 InteractController.Instance.RemoveListener(target);
+                rend.material.color = new Color(rend.material.color.r, rend.material.color.g, rend.material.color.b, 1f);
+                coroutineCounter--;
+            }
+            else if(value == 1f)
+            {
+                coroutineCounterEnter--;
             }
 
             
         }
 
+        IEnumerator WaitForCoroutine(FSMAction actionEntry, FSMState state)
+        {
+
+            yield return new WaitUntil(()=> (coroutineCounter == 0));
+            //this.machine.Fire(transition);
+            StateActions(actionEntry, state);
+        }
+
+        IEnumerator WaitForCoroutineEnter(FSMTransition transition)
+        {
+
+            yield return new WaitUntil(() => (coroutineCounterEnter == 0));
+            this.machine.Fire(transition.Name);
+        }
 
         /// <summary>
         /// Metodo che serve a verificare se si sono avverate determinate condizioni esterne per poter passare allo stato successivo
@@ -671,6 +728,23 @@ namespace AB.Manager.FSM
                     return true;
             }
         }
+
+        private bool CheckActiveCoroutine(FSMTransition transition)
+        {
+            if (coroutineCounterEnter > 0)
+            {
+                StartCoroutine(WaitForCoroutineEnter(transition));
+                return false;
+
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+
+        
 
         //end function section 
 
