@@ -38,8 +38,8 @@ namespace AB.Manager.FSM
         public float initialTime = 0f; //utilizzato per registrare il tempo d'ingresso in uno stato per far partire il counter in caso di trigger temporale
         public bool tempTrigg = false;
 
-        private int coroutineCounter=0;
-        private int coroutineCounterEnter = 0;
+        private int coroutinesOnExitCounter=0;
+        private int coroutinesOnEnterCounter = 0;
         public bool animated = false;
 
         public Dictionary<string, Vector3> objCoordBeforeGrabbing = new Dictionary<string, Vector3>();
@@ -72,7 +72,7 @@ namespace AB.Manager.FSM
             prova1 = Prova1.Instance;
 
 
-            fsm = ParseJson("/Resources/Json/Tester4.json"); //Insert the path of the Json that you want to parse
+            fsm = ParseJson("/Resources/Json/Tester2.json"); //Insert the path of the Json that you want to parse
             tags = GetTags(fsm.ListOfObjects);
 
             InitializeFSM(fsm);
@@ -86,7 +86,7 @@ namespace AB.Manager.FSM
             HeadController.HeadTriggerEnter += OnHeadTriggerEnter;
             HeadController.HeadTriggerExit += OnHeadTriggerExit;
 
-            ButtonsManager.Instance.Initialize(fsm, tags);
+            //ButtonsManager.Instance.Initialize(fsm, tags);
             handController.Initialize(tags, instatiator.ListOfElement3D);
             manipulableManager.Initialize(tags, instatiator.ListOfElement3D);
             headController.Initialize(tags, instatiator.ListOfTriggers);
@@ -234,7 +234,7 @@ namespace AB.Manager.FSM
                         foreach (var actionEntry in state.ActionsOnEntry)
                         {
                             builder.In(state.Name)
-                                    .ExecuteOnEntry(() => StartCoroutine(WaitForCoroutine(actionEntry, state)));//.ExecuteOnEntry(() => StateActions(actionEntry, state));
+                                    .ExecuteOnEntry(() => StartCoroutine(WaitForCoroutinesOnExit(actionEntry, state)));//.ExecuteOnEntry(() => StateActions(actionEntry, state));
                         }
                     }
                     if(state.ActionsOnExit.Count != 0)
@@ -252,7 +252,7 @@ namespace AB.Manager.FSM
                         {
                             builder.In(state.Name)
                             .On(transition.Name)
-                                .If(() => CheckActiveCoroutine(transition)).Goto(transition.NextState);
+                                .If(() => CheckCoroutinesOnEnter(transition)).Goto(transition.NextState);
                                 //.If(() => CheckActiveCoroutine(coroutineCounter, transition)).Goto(transition.NextState);
                         }//vedere bene la temporalità delle esecuzioni e sfruttare quella
                     }
@@ -291,6 +291,8 @@ namespace AB.Manager.FSM
         //begin function section 
 
 
+        
+
         /// <summary>
         /// Funzione che si occupa di triggerare le azioni che si hanno nel momento in cui si entra in uno stato 
         /// </summary>
@@ -313,7 +315,7 @@ namespace AB.Manager.FSM
                 switch (target)
                 {
                     case "ALL": //tutti gli oggetti
-                        switch (action.TargetType)
+                        switch (action.Group)
                         {
                             case "Element3D":
                                 foreach (var obj in instatiator.ListOfElement3D)
@@ -348,7 +350,7 @@ namespace AB.Manager.FSM
                         break;
                     case "ANY"://un target qualsiasi
                         Random R = new();
-                        switch (action.TargetType)
+                        switch (action.Group)
                         {
                             case "Element3D":
                                 int rand = R.Next(0, instatiator.ListOfElement3D.Count()); //rand è un numero randomico tra gli indici della lista di oggetti Manipulable
@@ -413,7 +415,7 @@ namespace AB.Manager.FSM
                         }
                         else //singolo gameobject
                         {
-                            switch (action.TargetType)
+                            switch (action.Group)
                             {
                                 case "Element3D":
                                     foreach (var o in instatiator.ListOfElement3D)
@@ -443,11 +445,11 @@ namespace AB.Manager.FSM
                                     }
                                     break;
                                 case "AnimationObject":
-                                    foreach (var o in instatiator.ListOfAnimationObj)
+                                    foreach (var o in instatiator.dictionaryOfAnimations)
                                     {
-                                        if (o.name.Equals(target))
+                                        if (o.Key.name.Equals(target))
                                         {
-                                            SwitchAction(action, o);
+                                            SwitchAction(action, o.Key);
                                         }
                                     }
                                     break;
@@ -457,29 +459,7 @@ namespace AB.Manager.FSM
                         }
                         break;
                 }
-                //questi if sotto li posso unire allo switch sopra
-                if (action.TargetType.Equals("AnimationObject"))
-                {   
-                    
-                    foreach(var obj in fsm.ListOfObjects)
-                    {
-                        if(obj.Type.Equals("AnimationObject") && obj.ObjectName.Equals(target))
-                        {
-                            foreach (var o in instatiator.ListOfAnimationObj)
-                            {
-                                if (o.name.Equals(target)) // && o.activeSelf
-                                {
-                                    StartAnimation(o, obj.Material);
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    
-
-                    
-                }
-                if (action.TargetType.Equals("Audio"))
+                if (action.Group.Equals("Audio"))
                 {
                     foreach(var obj in instatiator.ListOfAudioClips)
                     {
@@ -497,68 +477,88 @@ namespace AB.Manager.FSM
 
         public void SwitchAction(FSMAction action, GameObject target)
         {
-            switch (action.FsmAction) //azione che verrà effettuata su target
+            FsmAction fsmAction;
+            if (Enum.TryParse(action.FsmAction, out fsmAction))
             {
-                case "SetActive":
-                    if (!target.activeSelf)
-                    {
-                        target.SetActive(true);
-                        InteractController.Instance.AddListener(target);
-                    }
-                    break;
-                case "SetInactive":
-                    if (target.activeSelf)
-                    {
-                        if(target.GetComponent<PressableButtonHoloLens2>() == null) //non ho un bottone
+                switch (fsmAction) //azione che verrà effettuata su target
+                {
+                    case FsmAction.SetActive:
+                        if (!target.activeSelf)
                         {
-                            handController.isModified = true;
+                            target.SetActive(true);
+                            InteractController.Instance.AddListener(target);
                         }
-                        target.SetActive(false);
-                        InteractController.Instance.RemoveListener(target);
-                    }
-                    break;
-                case "SlowlyAppear": //al posto di SetActive
-                    //TODO? non so se aggiungere il check per verificare che il materiale dell'oggetto sia 'Fade' o se lasciarlo come assunzione
-                    if (!target.activeSelf)
-                    {
-                        StartCoroutine(FadeInOut(target, 1f)); //da aggiustare
-                    }
-                    break;
-                case "SlowlyDisappear": //al posto di SetInactive
-                    if (target.activeSelf)
-                    {
-                        StartCoroutine(FadeInOut(target, 0f));
-                    }
-                    break;
-                case "TurnBlue":
-                    if (target.activeSelf)
-                    {
-                        Renderer rend = target.GetComponent<Renderer>();
-                        rend.material.color = new Color(0, 0, 1, rend.material.color.a);
-                    }
-                    break;
-                case "TurnRed":
-                    if (target.activeSelf)
-                    {
-                        Renderer rend = target.GetComponent<Renderer>();
-                        rend.material.color = new Color(1, 0, 0, rend.material.color.a);
-                    }
-                    break;
-                case "Translate":
-                    if (target.activeSelf)
-                        StartCoroutine(LERPtransl(target, action));
-                    break;
-                case "Rotate":
-                    if (target.activeSelf)
-                        StartCoroutine(LERProt(target, action));
-                    break;
-                case "Scaling":
-                    if (target.activeSelf)
-                        StartCoroutine(LERPscale(target, action));
-                    break;
-                default:
-                    break;
+                        break;
+                    case FsmAction.SetInactive:
+                        if (target.activeSelf)
+                        {
+                            if (target.GetComponent<PressableButtonHoloLens2>() == null) //non ho un bottone
+                            {
+                                handController.isModified = true;
+                            }
+                            target.SetActive(false);
+                            InteractController.Instance.RemoveListener(target);
+                        }
+                        break;
+                    case FsmAction.SlowlyAppear: //al posto di SetActive
+                                         //TODO? non so se aggiungere il check per verificare che il materiale dell'oggetto sia 'Fade' o se lasciarlo come assunzione
+                        if (!target.activeSelf)
+                        {
+                            StartCoroutine(FadeInOut(target, 1f)); //da aggiustare
+                        }
+                        break;
+                    case FsmAction.SlowlyDisappear: //al posto di SetInactive
+                        if (target.activeSelf)
+                        {
+                            StartCoroutine(FadeInOut(target, 0f));
+                        }
+                        break;
+                    case FsmAction.TurnBlue:
+                        if (target.activeSelf)
+                        {
+                            Renderer rend = target.GetComponent<Renderer>();
+                            rend.material.color = new Color(0, 0, 1, rend.material.color.a);
+                        }
+                        break;
+                    case FsmAction.TurnRed:
+                        if (target.activeSelf)
+                        {
+                            Renderer rend = target.GetComponent<Renderer>();
+                            rend.material.color = new Color(1, 0, 0, rend.material.color.a);
+                        }
+                        break;
+                    case FsmAction.Translate:
+                        if (target.activeSelf)
+                            StartCoroutine(LERPtransl(target, action));
+                        break;
+                    case FsmAction.Rotate:
+                        if (target.activeSelf)
+                            StartCoroutine(LERProt(target, action));
+                        break;
+                    case FsmAction.Scaling:
+                        if (target.activeSelf)
+                            StartCoroutine(LERPscale(target, action));
+                        break;
+                    case FsmAction.StartAnimation:
+                        foreach (var anim in instatiator.dictionaryOfAnimations)
+                        {
+                            if (target == anim.Key)
+                            {
+                                StartAnimation(target, anim.Value);
+                                //StartCoroutine(WaitForAnimation());
+                            }
+                        }
+                        break;
+                    case FsmAction.PlayAnimation:
+                        Animation animation = target.GetComponent<Animation>();
+                        animation.Play(action.AnimationClip);
+                        break;
+                    default:
+                        break;
+                }
+
             }
+            
         }
 
         public void StartAnimation(GameObject target, string path)
@@ -567,18 +567,19 @@ namespace AB.Manager.FSM
             target.AddComponent<FSMAnimator.FSMAnimator>();
             animated = true;
             target.GetComponent<FSMAnimator.FSMAnimator>().LoadGltfBinaryFromMemory(path);
-            StartCoroutine(WaitAnimation());
-            //il load è un metodo async ==>coroutine che aspetta che finisce?
+            animated = false;
         }
 
-        IEnumerator WaitAnimation()
+        IEnumerator WaitForAnimation()
         {
             yield return new WaitUntil(() => (animated == false));
         }
 
+
+
         IEnumerator LERPtransl(GameObject o, FSMAction action)
         {
-            coroutineCounterEnter++;
+            coroutinesOnEnterCounter++;
             float timeElapsed = 0f; //tempo da cui parto
             float duration = action.MovementParameters.MovementDuration; //durata del movimento
             Vector3 startPosition = o.transform.position; //posizione iniziale dell'oggetto
@@ -597,12 +598,12 @@ namespace AB.Manager.FSM
             }
 
             o.transform.position = endPosition; 
-            coroutineCounterEnter--;
+            coroutinesOnEnterCounter--;
         }
 
         IEnumerator LERProt(GameObject o, FSMAction action)
         {
-            coroutineCounterEnter++;
+            coroutinesOnEnterCounter++;
             float timeElapsed = 0f; //tempo da cui parto
             float duration = action.MovementParameters.MovementDuration; //durata del movimento
             Vector3 targetPos = new(action.MovementParameters.TargetCoord.x, action.MovementParameters.TargetCoord.y, action.MovementParameters.TargetCoord.z);
@@ -618,13 +619,13 @@ namespace AB.Manager.FSM
                 yield return null;
             }
             o.transform.rotation = targetRotation;
-            coroutineCounterEnter--;
+            coroutinesOnEnterCounter--;
 
         }
 
         IEnumerator LERPscale(GameObject o, FSMAction action)
         {
-            coroutineCounterEnter++;
+            coroutinesOnEnterCounter++;
             float timeElapsed = 0f;
             float duration = action.MovementParameters.MovementDuration;
             Vector3 startScale = o.transform.localScale;
@@ -641,7 +642,7 @@ namespace AB.Manager.FSM
             }
 
             o.transform.localScale = endScale;
-            coroutineCounterEnter--;
+            coroutinesOnEnterCounter--;
 
         }
 
@@ -657,11 +658,11 @@ namespace AB.Manager.FSM
 
             if (value == 0f) //SlowlyDisappear
             {
-                coroutineCounter++;
+                coroutinesOnExitCounter++;
             }
             else if (value == 1f) //SlowlyAppear
             {
-                coroutineCounterEnter++;
+                coroutinesOnEnterCounter++;
                 //faccio in modo che il gameobject sia completamente trasparente prima di attivarlo
                 
                 rend.material.color = new Color(rend.material.color.r, rend.material.color.g, rend.material.color.b, 0f);
@@ -693,28 +694,28 @@ namespace AB.Manager.FSM
                 target.SetActive(false);
                 InteractController.Instance.RemoveListener(target);
                 rend.material.color = new Color(rend.material.color.r, rend.material.color.g, rend.material.color.b, 1f);
-                coroutineCounter--;
+                coroutinesOnExitCounter--;
             }
             else if(value == 1f)
             {
-                coroutineCounterEnter--;
+                coroutinesOnEnterCounter--;
             }
 
             
         }
 
-        IEnumerator WaitForCoroutine(FSMAction actionEntry, FSMState state)
+        IEnumerator WaitForCoroutinesOnExit(FSMAction actionEntry, FSMState state)
         {
 
-            yield return new WaitUntil(()=> (coroutineCounter == 0));
+            yield return new WaitUntil(()=> (coroutinesOnExitCounter == 0));
             //this.machine.Fire(transition);
             StateActions(actionEntry, state);
         }
 
-        IEnumerator WaitForCoroutineEnter(FSMTransition transition)
+        IEnumerator WaitForCoroutinesOnEnter(FSMTransition transition)
         {
 
-            yield return new WaitUntil(() => (coroutineCounterEnter == 0));
+            yield return new WaitUntil(() => (coroutinesOnEnterCounter == 0));
             this.machine.Fire(transition.Name);
         }
 
@@ -743,11 +744,11 @@ namespace AB.Manager.FSM
             }
         }
 
-        private bool CheckActiveCoroutine(FSMTransition transition)
+        private bool CheckCoroutinesOnEnter(FSMTransition transition)
         {
-            if (coroutineCounterEnter > 0)
+            if (coroutinesOnEnterCounter > 0)
             {
-                StartCoroutine(WaitForCoroutineEnter(transition));
+                StartCoroutine(WaitForCoroutinesOnEnter(transition));
                 return false;
 
             }
@@ -768,7 +769,7 @@ namespace AB.Manager.FSM
         /// </summary>
         /// <param name="state"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void ConflictDetector(FSMState state) //chiamo ogni volta che vado in uno stato nuovo
+        public void ConflictDetector(FSMState state) //chiamo ogni volta che vado in uno stato nuovo [non so quanto necessario]
         {
             //verificare se per ogni ogni azione di ciascuna transizione si ripetono i target 
             //gestire i casi target ANY/ALL/gruppo di target con eventuali esclusi 
@@ -789,7 +790,7 @@ namespace AB.Manager.FSM
                     {
                         foreach (var obj in fsm.ListOfObjects)
                         {
-                            if (obj.Type == action.TargetType && !obj.ObjectName.Equals(excluded) && !obj.Tag.Equals(excluded))
+                            if (!obj.ObjectName.Equals(excluded) && !obj.Tag.Equals(excluded))
                             {
                                 targets.Add(obj.ObjectName); //i target saranno tutti gli oggetti ad eccezione degli esclusi
                             }
@@ -799,7 +800,7 @@ namespace AB.Manager.FSM
                     {
                         foreach (var obj in fsm.ListOfObjects)
                         {
-                            if (obj.Type == action.TargetType && !obj.ObjectName.Equals(excluded) && obj.Tag.Equals(tar))
+                            if (!obj.ObjectName.Equals(excluded) && obj.Tag.Equals(tar))
                             {
                                 targets.Add(obj.ObjectName); //i target saranno tutti gli oggetti con il tag considerato 
                             }
@@ -830,7 +831,7 @@ namespace AB.Manager.FSM
                 {
                     foreach (var obj in fsm.ListOfObjects)
                     {
-                        if (obj.Type == action.TargetType && !obj.ObjectName.Equals(excluded) && !obj.Tag.Equals(excluded))
+                        if (!obj.ObjectName.Equals(excluded) && !obj.Tag.Equals(excluded))
                         {
                             targets.Add(obj.ObjectName); 
                         }
@@ -840,7 +841,7 @@ namespace AB.Manager.FSM
                 {
                     foreach (var obj in fsm.ListOfObjects)
                     {
-                        if (obj.Type == action.TargetType && !obj.ObjectName.Equals(excluded) && obj.Tag.Equals(tar))
+                        if (!obj.ObjectName.Equals(excluded) && obj.Tag.Equals(tar))
                         {
                             targets.Add(obj.ObjectName); 
                         }

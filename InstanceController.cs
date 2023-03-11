@@ -27,7 +27,7 @@ namespace AB.Controller.Instatiator
         public List<GameObject> ListOfElement3D = new List<GameObject>();
         public List<GameObject> ListOfSceneObj = new List<GameObject>();
         public List<GameObject> ListOfTriggers = new List<GameObject>();
-        public List<GameObject> ListOfAnimationObj = new List<GameObject>();
+        public Dictionary<GameObject, string> dictionaryOfAnimations = new Dictionary<GameObject, string>(); //contiene le coppie gameobject vuoto - path dell'animazione da caricare
         public List<AudioClip> ListOfAudioClips = new List<AudioClip>();
         public AudioSource audioSource = new AudioSource();
         public static InstanceController Instance { get; private set; }
@@ -36,7 +36,7 @@ namespace AB.Controller.Instatiator
 
         private void Awake()
         {
-            FSMModel json = ParseJson("/Resources/Json/Tester4.json");
+            FSMModel json = ParseJson("/Resources/Json/Tester2.json");
             Instance = this;
 
             foreach (var obj in json.ListOfObjects)
@@ -91,7 +91,13 @@ namespace AB.Controller.Instatiator
                         ListOfButtons.Add(o);
                         break;
                     case "AnimationObject":
-                        ListOfAnimationObj.Add(o);
+                        foreach(var p in json.ListOfMedia)
+                        {
+                            if (o.name.Equals(p.Name) && p.MediaType.Equals("Animation"))
+                            {
+                                dictionaryOfAnimations.Add(o, p.Path);
+                            }
+                        }
                         break;
                     default:
                         break;
@@ -103,15 +109,18 @@ namespace AB.Controller.Instatiator
             //alloca AudioClip
             foreach(var aud in json.ListOfMedia)
             {
-                //creo l'audioclip
-                a = Resources.Load<AudioClip>(aud.Path); //aud è il path dell'audio che carico
-                a.name = aud.Name;
-                ListOfAudioClips.Add(a);
-                //creo l'oggetto che mi contiene l'audio source
-                o = Instantiate(EmptyPrefab, new Vector3(0,0,0), Quaternion.identity);
-                o.AddComponent<AudioSource>();
-                audioSource = o.GetComponent<AudioSource>();
-
+                if (aud.MediaType.Equals("Audio"))
+                {
+                    //creo l'audioclip
+                    a = Resources.Load<AudioClip>(aud.Path); //aud è il path dell'audio che carico
+                    a.name = aud.Name;
+                    ListOfAudioClips.Add(a);
+                    //creo l'oggetto che mi contiene l'audio source
+                    o = Instantiate(EmptyPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+                    o.AddComponent<AudioSource>();
+                    audioSource = o.GetComponent<AudioSource>();
+                }
+                
             }
 
 

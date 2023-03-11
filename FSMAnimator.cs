@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace AB.FSMAnimator
@@ -22,7 +23,7 @@ namespace AB.FSMAnimator
 
         }
 
-        public async void LoadGltfBinaryFromMemory(string path)
+        public async void LoadGltfBinaryFromMemory(string path)   //Task<something>
         {
             //var filePath = "D:\\Downloads\\All_3bases_gearbox (2).glb";
             var filePath = path;
@@ -37,8 +38,8 @@ namespace AB.FSMAnimator
             {
                 success = await gltf.InstantiateMainSceneAsync(transform);
             }
-            FSMManager.Instance.animated = false;
         }
+
     }
 }
 

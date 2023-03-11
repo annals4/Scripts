@@ -39,20 +39,13 @@ namespace AB.Model.FSM
             public float z;
         }
 
-        /*
-        public class Coord
-        {
-            public float x;
-            public float y;
-            public float z;
-        }
-        */
 
         [Serializable]
         public class Media
         {
             public string Name;
             public string Path;
+            public string MediaType;
         }
 
 
@@ -75,8 +68,9 @@ namespace AB.Model.FSM
             public string FsmAction;
             public string Target; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE una delle precedenti:una delle precedenti (':' significa execpt)
             public bool Triggered;
-            public string TargetType; //****new
+            public string Group; 
             public Parameters MovementParameters;
+            public string AnimationClip; //passo il nome dell'animazione che voglio far partire
         }
 
         [Serializable]
@@ -109,32 +103,55 @@ namespace AB.Model.FSM
         
         public enum Type
         {
-            Element3D,
-            UI,
             Animation,
-            Trigger
+            Element3D,
+            Trigger,
+            UI
 
+        }
+
+        public enum Group
+        {
+            Animation,
+            Element3D,
+            Trigger,
+            UI
         }
 
         
         public enum FsmAction
         {
-            TurnBlue,
-            TurnRed,
-            SetActive,
-            SetInactive,
-            Translate,
+            //actionsOnEntry
+            PlayAnimation,
             Rotate,
             Scaling,
-            ////
-            ButtonClick, 
-            TouchElement3D,
-            EnterTrigger,
+            SetActive,
+            SetInactive,
+            SlowlyAppear,
+            SlowlyDisappear,
+            StartAnimation,
+            Translate,
+            TurnBlue,
+            TurnRed,
+            //ApplyTexture
+            //StopAnimation
+            //StopAudio
+        
+            //actionsOnTransition
+            ButtonClick,  //click del bottone
+            EnterTrigger, //entrata in una zona trigger (da accoppiare con exit trigger in cui si torna allo stato di partenza)
             ExitTrigger,
-            TriggerCollision
+            MoveElement3DDown,
+            MoveElement3DUp,
+            TouchElement3D, //tocco di un oggetto 3D
+            TriggerCollision //entrata in una zona trigger (effetto duraturo)
         }
         
-
+        public enum MediaType
+        {
+            Animation,
+            Audio
+        }
 
     }
 }

@@ -20,7 +20,7 @@ namespace AB.Manager.Action
 
         private string firedTransition = null;
 
-        public ButtonsManager buttonManager;
+        //public ButtonsManager buttonManager;
         public HandController collisionManager;
         public ManipulableManager manipulableManager;
         public Prova1 prova1;
@@ -36,7 +36,7 @@ namespace AB.Manager.Action
         // Start is called before the first frame update
         void Start()
         {
-            buttonManager = ButtonsManager.Instance;
+            //buttonManager = ButtonsManager.Instance;
             manipulableManager = ManipulableManager.Instance;
             collisionManager = HandController.Instance;
             prova1 = Prova1.Instance;
@@ -136,26 +136,30 @@ namespace AB.Manager.Action
         {
             foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
             {
-                switch ((flag, action.FsmAction)) //collego azione chiamante e azione effettuata
+                if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
                 {
-                    case ("Button", "ButtonClick"): //ho chiamato il metodo cliccando un bottone
-                        //ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                        Prova1.Instance.ButtonAction(action, transition, obj);
-                        break;
-                    case ("Hand", "TouchElement3D"): //ho chiamato il metodo toccando un oggetto
-                        HandController.Instance.CollisionAction(action, transition, obj);
-                        break;
-                    case ("InTrigger", "EnterTrigger"): //chiamo quando entro in un qualche zona trigger
-                    case ("OutTrigger", "ExitTrigger"): //chiamo quando esco da qualche zona trigger
-                        HeadController.Instance.InTrigger(action, transition, obj);
-                        break;
-                    //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
-                    case ("InTrigger", "TriggerCollision"):
-                        HeadController.Instance.HeadAction(action, transition, obj);
-                        break;
-                    default:
-                        break;
+                    switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                    {
+                        case ("Button", FsmAction.ButtonClick): //ho chiamato il metodo cliccando un bottone
+                                                                //ButtonsManager.Instance.ButtonAction(action, transition, obj);
+                            Prova1.Instance.ButtonAction(action, transition, obj);
+                            break;
+                        case ("Hand", FsmAction.TouchElement3D): //ho chiamato il metodo toccando un oggetto
+                            HandController.Instance.CollisionAction(action, transition, obj);
+                            break;
+                        case ("InTrigger", FsmAction.EnterTrigger): //chiamo quando entro in un qualche zona trigger
+                        case ("OutTrigger", FsmAction.ExitTrigger): //chiamo quando esco da qualche zona trigger
+                            HeadController.Instance.InTrigger(action, transition, obj);
+                            break;
+                        //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
+                        case ("InTrigger", FsmAction.TriggerCollision):
+                            HeadController.Instance.HeadAction(action, transition, obj);
+                            break;
+                        default:
+                            break;
+                    }
                 }
+
 
                 if (setting.Equals(SettingType.ORDERED))
                 {
@@ -211,8 +215,7 @@ namespace AB.Manager.Action
             foreach (var transition in currentState.ListOfTransitions)
             {
                 //ConflictAnalyser(transition);
-                SettingType setting;
-                if (Enum.TryParse(transition.SettingType, out setting))
+                if (Enum.TryParse(transition.SettingType, out SettingType setting))
                 {
                     ActionSetting(setting, transition, obj, startGrab, rPoint, flag);
 
@@ -232,16 +235,20 @@ namespace AB.Manager.Action
                     andCondition = true;
                     foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
                     {
-                        //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
-                        switch ((flag, action.FsmAction)) //collego azione chiamante e azione effettuata
+                        if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
                         {
-                            case ("Grabbed", "MoveElement3DDown"):
-                            case ("Grabbed", "MoveElement3DUp"):
-                                ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
-                                break;
-                            default:
-                                break;
+                            //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
+                            switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                            {
+                                case ("Grabbed", FsmAction.MoveElement3DDown):
+                                case ("Grabbed", FsmAction.MoveElement3DUp):
+                                    ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
+                        
 
                     }
                     foreach (var action in transition.ActionsOnTransition) //ciclo per verificare che tutte le azioni siano state triggerate
@@ -265,15 +272,18 @@ namespace AB.Manager.Action
 
                     foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
                     {
-                        //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
-                        switch ((flag, action.FsmAction)) //collego azione chiamante e azione effettuata
+                        if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
                         {
-                            case ("MoveCubeDown", "Grabbed"):
-                            case ("MoveCubeUp", "Grabbed"):
-                                ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
-                                break;
-                            default:
-                                break;
+                            //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
+                            switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                            {
+                                case ("Grabbed", FsmAction.MoveElement3DDown):
+                                case ("Grabbed", FsmAction.MoveElement3DUp):
+                                    ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
 
                     }
@@ -293,15 +303,18 @@ namespace AB.Manager.Action
 
                     foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
                     {
-                        //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
-                        switch ((flag, action.FsmAction)) //collego azione chiamante e azione effettuata
+                        if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
                         {
-                            case ("MoveCubeDown", "Grabbed"):
-                            case ("MoveCubeUp", "Grabbed"):
-                                ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
-                                break;
-                            default:
-                                break;
+                            //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
+                            switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                            {
+                                case ("Grabbed", FsmAction.MoveElement3DDown):
+                                case ("Grabbed", FsmAction.MoveElement3DUp):
+                                    ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
 
                         if (transition.ActionsOnTransition[0].Triggered)
@@ -347,7 +360,7 @@ namespace AB.Manager.Action
 
         public void Reset()
         {
-            ButtonsManager.Instance.Reset();
+            //ButtonsManager.Instance.Reset();
             HandController.Instance.Reset();
             ManipulableManager.Instance.Reset();
             HeadController.Instance.Reset();
