@@ -43,10 +43,10 @@ namespace AB.Manager.Prova
 
 
 
-        public void ButtonAction(FSMAction action, FSMTransition transition, GameObject obj)
+        public void ButtonAction(FSMInput action, FSMTransition transition, GameObject obj)
         {
             //chiamo il metodo passandogli l'azione, la transizione, l'oggetto target
-            var t = action.Target.Split(':');
+            var t = action.InputTarget.Split(':');
             var tar = t[0];
             var excluded = t.Length > 1 ? t[1] : null;
             
@@ -58,7 +58,7 @@ namespace AB.Manager.Prova
             }
             else //se il target è un oggetto qualsiasi
             {
-                if (obj.name == action.Target) //se il bottone che è stato cliccato è il target dell'azione
+                if (obj.name == action.InputTarget) //se il bottone che è stato cliccato è il target dell'azione
                 {
                     action.Triggered = true;
                 }
@@ -77,7 +77,7 @@ namespace AB.Manager.Prova
         /// <param name="transition"></param>
         /// <param name="action"></param>
         /// <param name="objId"></param>
-        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+        public void TargetSetting(FSMTransition transition, FSMInput action, GameObject obj, string target, string excluded)
         {
             dictionaryOfButtons[obj] = true; //diventa vero quando pigio un bottone
 

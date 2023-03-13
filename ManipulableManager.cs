@@ -42,19 +42,19 @@ namespace AB.Manager.Manipulable
             firedTransition = null;
             foreach (var transition in currentState.ListOfTransitions)
             {
-                foreach(var action in transition.ActionsOnTransition)
+                foreach(var action in transition.TransitionInput)
                 {
-                    switch (action.FsmAction)
+                    switch (action.FsmInput)
                     {
                         case "MoveElement3DDown":
                             //da gestire i vari casi (attenzione al flip che fa in 0, dove passa a negativo)
-                            if (obj.name == action.Target && (startingCoord[obj.name].y-releasedCoord.y > 0.1))
+                            if (obj.name == action.InputTarget && (startingCoord[obj.name].y-releasedCoord.y > 0.1))
                             {
                                 firedTransition = transition.Name;
                             }
                             break;
                         case "MoveElement3DUp":
-                            if (obj.name == action.Target && (releasedCoord.y-startingCoord[obj.name].y > 0.1))
+                            if (obj.name == action.InputTarget && (releasedCoord.y-startingCoord[obj.name].y > 0.1))
                             {
                                 firedTransition = transition.Name;
                             }
@@ -68,25 +68,25 @@ namespace AB.Manager.Manipulable
             return firedTransition;
         }
 
-        public void ManipulableAction(FSMAction action, FSMTransition transition, GameObject obj, Dictionary<string, Vector3> startingCoord, Vector3 releasedCoord)
+        public void ManipulableAction(FSMInput action, FSMTransition transition, GameObject obj, Dictionary<string, Vector3> startingCoord, Vector3 releasedCoord)
         {
-            var t = action.Target.Split(':');
+            var t = action.InputTarget.Split(':');
             var tar = t[0];
             var excluded = t.Length > 1 ? t[1] : null;
 
             //PASSO 1: DISTINGUO IL CASO IN BASE AL TARGET
             if (tar.Equals("ALL") | tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
             {
-                switch (action.FsmAction)
+                switch (action.FsmInput)
                 {
                     case "MoveElement3DUp":
-                        if (obj.name == action.Target && (releasedCoord.y - startingCoord[obj.name].y > 0.1)) //se si verifica la condizione di grab detta dall'azione posso fare un check se triggerarla
+                        if (obj.name == action.FsmInput && (releasedCoord.y - startingCoord[obj.name].y > 0.1)) //se si verifica la condizione di grab detta dall'azione posso fare un check se triggerarla
                         {
                             TargetSetting(transition, action, obj, tar, excluded); //SETTA TRUE sull'azione triggerata
                         }
                         break;
                     case "MoveElement3DDown":
-                        if (obj.name == action.Target && (startingCoord[obj.name].y - releasedCoord.y > 0.1))
+                        if (obj.name == action.FsmInput && (startingCoord[obj.name].y - releasedCoord.y > 0.1))
                         {
                             TargetSetting(transition, action, obj, tar, excluded); //SETTA TRUE sull'azione triggerata
                         }
@@ -99,16 +99,16 @@ namespace AB.Manager.Manipulable
             }
             else //se il target è un oggetto qualsiasi
             {
-                switch (action.FsmAction)
+                switch (action.FsmInput)
                 {
                     case "MoveElement3DUp":
-                        if (obj.name == action.Target && (releasedCoord.y - startingCoord[obj.name].y > 0.1))
+                        if (obj.name == action.FsmInput && (releasedCoord.y - startingCoord[obj.name].y > 0.1))
                         {
                             action.Triggered = true;
                         }
                         break;
                     case "MoveElement3DDown":
-                        if (obj.name == action.Target && (startingCoord[obj.name].y - releasedCoord.y > 0.1))
+                        if (obj.name == action.FsmInput && (startingCoord[obj.name].y - releasedCoord.y > 0.1))
                         {
                             action.Triggered = true;
                         }
@@ -120,7 +120,7 @@ namespace AB.Manager.Manipulable
             }
         }
 
-        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+        public void TargetSetting(FSMTransition transition, FSMInput action, GameObject obj, string target, string excluded)
         {
             string objId = obj.name;
 

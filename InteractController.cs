@@ -30,7 +30,7 @@ namespace AB.Controller.Interactor
         void Start()
         {
             Instance = this;
-            FSMModel json = ParseJson("/Resources/Json/Tester2.json");
+            FSMModel json = ParseJson("/Resources/Json/Tester4.json");
             instatiator = InstanceController.Instance;
 
             

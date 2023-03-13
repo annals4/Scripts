@@ -85,9 +85,9 @@ namespace AB.Controller.Head
 
 
         //CASO1: Entro in una zona trigger con la testa e si scatena la transizione (azione: TriggerCollision)
-        public void HeadAction(FSMAction action, FSMTransition transition, GameObject obj)
+        public void HeadAction(FSMInput action, FSMTransition transition, GameObject obj)
         {
-            var t = action.Target.Split(':');
+            var t = action.InputTarget.Split(':');
             var tar = t[0];
             var excluded = t.Length > 1 ? t[1] : null;
 
@@ -98,7 +98,7 @@ namespace AB.Controller.Head
             }
             else //se il target è un oggetto qualsiasi
             {
-                if (obj.name == action.Target) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
+                if (obj.name == action.InputTarget) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
                 {
                     action.Triggered = true;
                 }
@@ -115,7 +115,7 @@ namespace AB.Controller.Head
         /// <param name="transition"></param>
         /// <param name="action"></param>
         /// <param name="objId"></param>
-        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+        public void TargetSetting(FSMTransition transition, FSMInput action, GameObject obj, string target, string excluded)
         {
             dictionaryOfTriggers[obj] = true; //diventa vero quando tocco un oggetto
 
@@ -212,9 +212,9 @@ namespace AB.Controller.Head
         
         //TODO: da rivedere
         //CASO2: in cui entro in una zona trigger e si scatena un azione sino a quando non esco (accoppiare le azioni di EnterTrigger con ExitTrigger)
-        public void InTrigger(FSMAction action, FSMTransition transition, GameObject obj)
+        public void InTrigger(FSMInput action, FSMTransition transition, GameObject obj)
         {
-            var t = action.Target.Split(':');
+            var t = action.InputTarget.Split(':');
             var tar = t[0];
             var excluded = t.Length > 1 ? t[1] : null;
 
@@ -226,14 +226,14 @@ namespace AB.Controller.Head
             }
             else //se il target è un oggetto qualsiasi
             {
-                if (obj.name == action.Target) //entro nell'if se il target dell'azione corrisponde alla zona trigger in cui sono entrato 
+                if (obj.name == action.InputTarget) //entro nell'if se il target dell'azione corrisponde alla zona trigger in cui sono entrato 
                 {
                     action.Triggered = true;
                 }
             }
         }
 
-        public void InSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+        public void InSetting(FSMTransition transition, FSMInput action, GameObject obj, string target, string excluded)
         {
             string objId = obj.name; //Zona trigger in cui sono dentro 
 

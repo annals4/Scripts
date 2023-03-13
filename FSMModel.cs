@@ -66,11 +66,18 @@ namespace AB.Model.FSM
         public class FSMAction
         {
             public string FsmAction;
-            public string Target; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE una delle precedenti:una delle precedenti (':' significa execpt)
-            public bool Triggered;
+            public string ActionTarget; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE una delle precedenti:una delle precedenti (':' significa execpt)
             public string Group; 
             public Parameters MovementParameters;
             public string AnimationClip; //passo il nome dell'animazione che voglio far partire
+        }
+
+        [Serializable]
+        public class FSMInput
+        {
+            public string FsmInput;
+            public string InputTarget; //struttura target: nome_target OPPURE parole chiave: any, all OPPURE nome_tag OPPURE una delle precedenti:una delle precedenti (':' significa execpt)
+            public bool Triggered;
         }
 
         [Serializable]
@@ -86,7 +93,7 @@ namespace AB.Model.FSM
         {
             public string Name;
             public string ExternalCondition;
-            public List<FSMAction> ActionsOnTransition;
+            public List<FSMInput> TransitionInput;
             public string NextState;
             public string SettingType;
         }
@@ -118,7 +125,7 @@ namespace AB.Model.FSM
             UI
         }
 
-        
+
         public enum FsmAction
         {
             //actionsOnEntry
@@ -134,10 +141,12 @@ namespace AB.Model.FSM
             TurnBlue,
             TurnRed,
             //ApplyTexture
-            //StopAnimation
+            StopAnimation //test
             //StopAudio
-        
-            //actionsOnTransition
+        }
+
+        public enum FsmInput
+        {
             ButtonClick,  //click del bottone
             EnterTrigger, //entrata in una zona trigger (da accoppiare con exit trigger in cui si torna allo stato di partenza)
             ExitTrigger,

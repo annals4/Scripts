@@ -52,7 +52,7 @@ namespace AB.Manager.Action
                 SettingType setting;
                 if (Enum.TryParse(transition.SettingType, out setting))
                 {
-                    ActionSetting(setting, transition, obj, flag); //il flag deriva dal metodo che invoca il transitiontrigger
+                    InputSetting(setting, transition, obj, flag); //il flag deriva dal metodo che invoca il transitiontrigger
 
                 }
 
@@ -66,7 +66,7 @@ namespace AB.Manager.Action
         /// <param name="setting"></param>
         /// <param name="transition"></param>
         /// <param name="obj"></param>
-        public void ActionSetting(SettingType setting, FSMTransition transition, GameObject obj, string flag)
+        public void InputSetting(SettingType setting, FSMTransition transition, GameObject obj, string flag)
         {
             string objId = obj.name;
             switch (setting)
@@ -75,11 +75,11 @@ namespace AB.Manager.Action
 
                     andCondition = true;
 
-                    ActionTrigger(transition, obj, flag, setting);
+                    InputTrigger(transition, obj, flag, setting);
 
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per verificare che tutte le azioni siano state triggerate
+                    foreach (var input in transition.TransitionInput) //ciclo per verificare che tutte le azioni siano state triggerate
                     {
-                        if (!action.Triggered) //condizione per verificare che tutte le azioni della transizione siano state eseguite
+                        if (!input.Triggered) //condizione per verificare che tutte le azioni della transizione siano state eseguite
                         {
                             andCondition = false;
                             break;
@@ -88,18 +88,18 @@ namespace AB.Manager.Action
                     if (andCondition)
                     {
                         firedTransition = transition.Name;
-                        UnTrigger(transition); //a tutte le azioni il campio action.trigger viene settato nuovamente a false
+                        UnTrigger(transition); //a tutte le azioni il campio input.trigger viene settato nuovamente a false
                         Reset();
                     }
 
                     break;
 
                 case SettingType.OR: //solo un'azione qualsiasi della transizione deve essere stata fatta
-                    ActionTrigger(transition, obj, flag, setting);
+                    InputTrigger(transition, obj, flag, setting);
 
-                    foreach (var action in transition.ActionsOnTransition)
+                    foreach (var input in transition.TransitionInput)
                     {
-                        if (action.Triggered)//me ne basta una
+                        if (input.Triggered)//me ne basta una
                         {
                             firedTransition = transition.Name;
                             UnTrigger(transition);
@@ -110,9 +110,9 @@ namespace AB.Manager.Action
                     break;
                 case SettingType.ORDERED:
 
-                    ActionTrigger(transition, obj, flag, setting);
+                    InputTrigger(transition, obj, flag, setting);
                     
-                    if (ord == transition.ActionsOnTransition.Count)
+                    if (ord == transition.TransitionInput.Count)
                     {
                         firedTransition = transition.Name;
                         UnTrigger(transition);
@@ -132,28 +132,28 @@ namespace AB.Manager.Action
 
 
 
-        public void ActionTrigger(FSMTransition transition, GameObject obj, string flag, SettingType setting)
+        public void InputTrigger(FSMTransition transition, GameObject obj, string flag, SettingType setting)
         {
-            foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
+            foreach (var input in transition.TransitionInput) //ciclo per settare se un azione è stata 'triggered'
             {
-                if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
+                if (Enum.TryParse(input.FsmInput, out FsmInput fsmInput))
                 {
-                    switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                    switch ((flag, fsmInput)) //collego azione chiamante e azione effettuata
                     {
-                        case ("Button", FsmAction.ButtonClick): //ho chiamato il metodo cliccando un bottone
+                        case ("Button", FsmInput.ButtonClick): //ho chiamato il metodo cliccando un bottone
                                                                 //ButtonsManager.Instance.ButtonAction(action, transition, obj);
-                            Prova1.Instance.ButtonAction(action, transition, obj);
+                            Prova1.Instance.ButtonAction(input, transition, obj);
                             break;
-                        case ("Hand", FsmAction.TouchElement3D): //ho chiamato il metodo toccando un oggetto
-                            HandController.Instance.CollisionAction(action, transition, obj);
+                        case ("Hand", FsmInput.TouchElement3D): //ho chiamato il metodo toccando un oggetto
+                            HandController.Instance.CollisionAction(input, transition, obj);
                             break;
-                        case ("InTrigger", FsmAction.EnterTrigger): //chiamo quando entro in un qualche zona trigger
-                        case ("OutTrigger", FsmAction.ExitTrigger): //chiamo quando esco da qualche zona trigger
-                            HeadController.Instance.InTrigger(action, transition, obj);
+                        case ("InTrigger", FsmInput.EnterTrigger): //chiamo quando entro in un qualche zona trigger
+                        case ("OutTrigger", FsmInput.ExitTrigger): //chiamo quando esco da qualche zona trigger
+                            HeadController.Instance.InTrigger(input, transition, obj);
                             break;
                         //NB: Se voglio triggerare l'azione solo all'entrata allora come azione avrò TriggerCollision
-                        case ("InTrigger", FsmAction.TriggerCollision):
-                            HeadController.Instance.HeadAction(action, transition, obj);
+                        case ("InTrigger", FsmInput.TriggerCollision):
+                            HeadController.Instance.HeadAction(input, transition, obj);
                             break;
                         default:
                             break;
@@ -163,20 +163,20 @@ namespace AB.Manager.Action
 
                 if (setting.Equals(SettingType.ORDERED))
                 {
-                    if (transition.ActionsOnTransition[0].Triggered)
+                    if (transition.TransitionInput[0].Triggered)
                     {
                         ord = 1;
-                        for (int i = 1; i < transition.ActionsOnTransition.Count; i++)
+                        for (int i = 1; i < transition.TransitionInput.Count; i++)
                         {
-                            if (transition.ActionsOnTransition[i].Triggered && transition.ActionsOnTransition[i - 1].Triggered) //l'azione precedente è stata triggerata
+                            if (transition.TransitionInput[i].Triggered && transition.TransitionInput[i - 1].Triggered) //l'azione precedente è stata triggerata
                             {
                                 ord++;
                             }
                             else
                             {
-                                for (int j = i; j < transition.ActionsOnTransition.Count; j++)
+                                for (int j = i; j < transition.TransitionInput.Count; j++)
                                 {
-                                    transition.ActionsOnTransition[j].Triggered = false; //annullo tutte le azioni dopo quella che non mi si è triggerata
+                                    transition.TransitionInput[j].Triggered = false; //annullo tutte le azioni dopo quella che non mi si è triggerata
                                 }
                                 break;
                             }
@@ -184,7 +184,7 @@ namespace AB.Manager.Action
                     }
                     else
                     {
-                        action.Triggered = false;
+                        input.Triggered = false;
                     }
                 }
 
@@ -217,7 +217,7 @@ namespace AB.Manager.Action
                 //ConflictAnalyser(transition);
                 if (Enum.TryParse(transition.SettingType, out SettingType setting))
                 {
-                    ActionSetting(setting, transition, obj, startGrab, rPoint, flag);
+                    InputSetting(setting, transition, obj, startGrab, rPoint, flag);
 
                 }
 
@@ -225,7 +225,7 @@ namespace AB.Manager.Action
             return firedTransition;
         }
 
-        public void ActionSetting(SettingType setting, FSMTransition transition, GameObject obj, Dictionary<string, Vector3> startGrab, Vector3 rPoint, string flag)
+        public void InputSetting(SettingType setting, FSMTransition transition, GameObject obj, Dictionary<string, Vector3> startGrab, Vector3 rPoint, string flag)
         {
             string objId = obj.name;
             switch (setting)
@@ -233,16 +233,16 @@ namespace AB.Manager.Action
                 case SettingType.AND://tutte le azioni di una transizione devono aver avuto luogo
 
                     andCondition = true;
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
+                    foreach (var input in transition.TransitionInput) //ciclo per settare se un azione è stata 'triggered'
                     {
-                        if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
+                        if (Enum.TryParse(input.FsmInput, out FsmInput fsmInput))
                         {
-                            //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
-                            switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                            //qui differenzio tra le varie azioni, e mi occupo di settare gli input.triggered a true
+                            switch ((flag, fsmInput)) //collego azione chiamante e azione effettuata
                             {
-                                case ("Grabbed", FsmAction.MoveElement3DDown):
-                                case ("Grabbed", FsmAction.MoveElement3DUp):
-                                    ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                case ("Grabbed", FsmInput.MoveElement3DDown):
+                                case ("Grabbed", FsmInput.MoveElement3DUp):
+                                    ManipulableManager.Instance.ManipulableAction(input, transition, obj, startGrab, rPoint);
                                     break;
                                 default:
                                     break;
@@ -251,9 +251,9 @@ namespace AB.Manager.Action
                         
 
                     }
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per verificare che tutte le azioni siano state triggerate
+                    foreach (var input in transition.TransitionInput) //ciclo per verificare che tutte le azioni siano state triggerate
                     {
-                        if (!action.Triggered) //condizione per verificare che tutte le azioni della transizione siano state eseguite
+                        if (!input.Triggered) //condizione per verificare che tutte le azioni della transizione siano state eseguite
                         {
                             andCondition = false;
                             break;
@@ -262,7 +262,7 @@ namespace AB.Manager.Action
                     if (andCondition)
                     {
                         firedTransition = transition.Name;
-                        UnTrigger(transition); //a tutte le azioni il campio action.trigger viene settato nuovamente a false
+                        UnTrigger(transition); //a tutte le azioni il campio input.trigger viene settato nuovamente a false
                         Reset();
 
                     }
@@ -270,16 +270,16 @@ namespace AB.Manager.Action
 
                 case SettingType.OR: ////////////solo un'azione qualsiasi della transizione deve essere stata fatta
 
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
+                    foreach (var input in transition.TransitionInput) //ciclo per settare se un azione è stata 'triggered'
                     {
-                        if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
+                        if (Enum.TryParse(input.FsmInput, out FsmInput fsmInput))
                         {
                             //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
-                            switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                            switch ((flag, fsmInput)) //collego azione chiamante e azione effettuata
                             {
-                                case ("Grabbed", FsmAction.MoveElement3DDown):
-                                case ("Grabbed", FsmAction.MoveElement3DUp):
-                                    ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                case ("Grabbed", FsmInput.MoveElement3DDown):
+                                case ("Grabbed", FsmInput.MoveElement3DUp):
+                                    ManipulableManager.Instance.ManipulableAction(input, transition, obj, startGrab, rPoint);
                                     break;
                                 default:
                                     break;
@@ -287,9 +287,9 @@ namespace AB.Manager.Action
                         }
 
                     }
-                    foreach (var action in transition.ActionsOnTransition)
+                    foreach (var input in transition.TransitionInput)
                     {
-                        if (action.Triggered)//me ne basta una
+                        if (input.Triggered)//me ne basta una
                         {
                             firedTransition = transition.Name;
                             UnTrigger(transition);
@@ -301,36 +301,36 @@ namespace AB.Manager.Action
 
                 case SettingType.ORDERED:
 
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
+                    foreach (var input in transition.TransitionInput) //ciclo per settare se un azione è stata 'triggered'
                     {
-                        if (Enum.TryParse(action.FsmAction, out FsmAction fsmAction))
+                        if (Enum.TryParse(input.FsmInput, out FsmInput fsmInput))
                         {
                             //qui differenzio tra le varie azioni, e mi occupo di settare gli action.triggered a true
-                            switch ((flag, fsmAction)) //collego azione chiamante e azione effettuata
+                            switch ((flag, fsmInput)) //collego azione chiamante e azione effettuata
                             {
-                                case ("Grabbed", FsmAction.MoveElement3DDown):
-                                case ("Grabbed", FsmAction.MoveElement3DUp):
-                                    ManipulableManager.Instance.ManipulableAction(action, transition, obj, startGrab, rPoint);
+                                case ("Grabbed", FsmInput.MoveElement3DDown):
+                                case ("Grabbed", FsmInput.MoveElement3DUp):
+                                    ManipulableManager.Instance.ManipulableAction(input, transition, obj, startGrab, rPoint);
                                     break;
                                 default:
                                     break;
                             }
                         }
 
-                        if (transition.ActionsOnTransition[0].Triggered)
+                        if (transition.TransitionInput[0].Triggered)
                         {
                             ord = 1;
-                            for (int i = 1; i < transition.ActionsOnTransition.Count; i++)
+                            for (int i = 1; i < transition.TransitionInput.Count; i++)
                             {
-                                if (transition.ActionsOnTransition[i].Triggered && transition.ActionsOnTransition[i - 1].Triggered) //l'azione precedente è stata triggerata
+                                if (transition.TransitionInput[i].Triggered && transition.TransitionInput[i - 1].Triggered) //l'azione precedente è stata triggerata
                                 {
                                     ord++;
                                 }
                                 else
                                 {
-                                    for (int j = i; j < transition.ActionsOnTransition.Count; j++)
+                                    for (int j = i; j < transition.TransitionInput.Count; j++)
                                     {
-                                        transition.ActionsOnTransition[j].Triggered = false; //annullo tutte le azioni dopo quella che non mi si è triggerata
+                                        transition.TransitionInput[j].Triggered = false; //annullo tutte le azioni dopo quella che non mi si è triggerata
                                     }
                                     break;
                                 }
@@ -338,10 +338,10 @@ namespace AB.Manager.Action
                         }
                         else
                         {
-                            action.Triggered = false;
+                            input.Triggered = false;
                         }
                     }
-                    if (ord == transition.ActionsOnTransition.Count)
+                    if (ord == transition.TransitionInput.Count)
                     {
                         firedTransition = transition.Name;
                         UnTrigger(transition);

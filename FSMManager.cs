@@ -72,7 +72,7 @@ namespace AB.Manager.FSM
             prova1 = Prova1.Instance;
 
 
-            fsm = ParseJson("/Resources/Json/Tester2.json"); //Insert the path of the Json that you want to parse
+            fsm = ParseJson("/Resources/Json/Tester4.json"); //Insert the path of the Json that you want to parse
             tags = GetTags(fsm.ListOfObjects);
 
             InitializeFSM(fsm);
@@ -309,7 +309,7 @@ namespace AB.Manager.FSM
 
             if (action.FsmAction != null) 
             {
-                var t = action.Target.Split(':');
+                var t = action.ActionTarget.Split(':');
                 var target = t[0];
                 var excluded = t.Length > 1 ? t[1] : null;
                 switch (target)
@@ -529,15 +529,15 @@ namespace AB.Manager.FSM
                         break;
                     case FsmAction.Translate:
                         if (target.activeSelf)
-                            StartCoroutine(LERPtransl(target, action));
+                            StartCoroutine(this.LERPtransl(target, action));
                         break;
                     case FsmAction.Rotate:
                         if (target.activeSelf)
-                            StartCoroutine(LERProt(target, action));
+                            StartCoroutine(this.LERProt(target, action));
                         break;
                     case FsmAction.Scaling:
                         if (target.activeSelf)
-                            StartCoroutine(LERPscale(target, action));
+                            StartCoroutine(this.LERPscale(target, action));
                         break;
                     case FsmAction.StartAnimation:
                         foreach (var anim in instatiator.dictionaryOfAnimations)
@@ -552,6 +552,10 @@ namespace AB.Manager.FSM
                     case FsmAction.PlayAnimation:
                         Animation animation = target.GetComponent<Animation>();
                         animation.Play(action.AnimationClip);
+                        break;
+                    case FsmAction.StopAnimation:
+                        Animation animationToStop = target.GetComponent<Animation>();
+                        animationToStop.Stop(); //stop all the animations
                         break;
                     default:
                         break;
@@ -780,9 +784,9 @@ namespace AB.Manager.FSM
             //check dei conflitti tra target delle azioni delle transizioni di uno stato 
             foreach (var transition in state.ListOfTransitions)
             {
-                foreach (var action in transition.ActionsOnTransition)
+                foreach (var action in transition.TransitionInput)
                 {
-                    var t = action.Target.Split(':'); //':' viene utilizzato per le esclusioni 
+                    var t = action.InputTarget.Split(':'); //':' viene utilizzato per le esclusioni 
                     var tar = t[0]; //tar contiene il target dell'azione
                     var excluded = t.Length > 1 ? t[1] : null;
 
@@ -823,7 +827,7 @@ namespace AB.Manager.FSM
             //check dei conflitti tra target delle azioni effettuate in entrata ad uno stato (come sopra)
             foreach (var action in state.ActionsOnEntry)
             {
-                var t = action.Target.Split(':');
+                var t = action.ActionTarget.Split(':');
                 var tar = t[0];
                 var excluded = t.Length > 1 ? t[1] : null;
 
@@ -863,7 +867,7 @@ namespace AB.Manager.FSM
        
         public static void UnTrigger(FSMTransition transition)
         {
-            foreach (var action in transition.ActionsOnTransition)
+            foreach (var action in transition.TransitionInput)
             {
                 action.Triggered = false;
             }

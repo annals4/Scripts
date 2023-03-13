@@ -70,9 +70,9 @@ namespace AB.Manager.Button
                 case SettingType.AND:///////////tutte le azioni di una transizione devono aver avuto luogo
 
                     andCondition = true;
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per settare se un azione è stata 'triggered'
+                    foreach (var action in transition.TransitionInput) //ciclo per settare se un azione è stata 'triggered'
                     {
-                        var t = action.Target.Split(':');
+                        var t = action.InputTarget.Split(':');
                         var tar = t[0];
                         var excluded = t.Length > 1 ? t[1] : null;
                         if (tar.Equals("ALL") | tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
@@ -81,13 +81,13 @@ namespace AB.Manager.Button
                         }
                         else //se il target è un oggetto qualsiasi
                         {
-                            if (objId == action.Target) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
+                            if (objId == action.InputTarget) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
                             {
                                 action.Triggered = true;
                             }
                         }
                     }
-                    foreach (var action in transition.ActionsOnTransition) //ciclo per verificare che tutte le azioni siano state triggerate
+                    foreach (var action in transition.TransitionInput) //ciclo per verificare che tutte le azioni siano state triggerate
                     {
                         if (!action.Triggered) //condizione per verificare che tutte le azioni della transizione siano state eseguite
                         {
@@ -106,9 +106,9 @@ namespace AB.Manager.Button
 
                     break;
                 case SettingType.OR: ////////////solo un'azione qualsiasi della transizione deve essere stata fatta
-                    foreach (var action in transition.ActionsOnTransition)
+                    foreach (var action in transition.TransitionInput)
                     {
-                        var t = action.Target.Split(':');
+                        var t = action.InputTarget.Split(':');
                         var tar = t[0];
                         var excluded = t.Length > 1 ? t[1] : null;
                         if (tar.Equals("ALL") | tar.Equals("ANY") | tags.Contains(tar))//se il Target è una parola speciale
@@ -116,13 +116,13 @@ namespace AB.Manager.Button
                             TargetSetting(transition, action, obj, tar, excluded);
                         }
 
-                        if (objId == action.Target)
+                        if (objId == action.InputTarget)
                         {
                             action.Triggered = true;
                             break;
                         }
                     }
-                    foreach (var action in transition.ActionsOnTransition)
+                    foreach (var action in transition.TransitionInput)
                     {
                         if (action.Triggered)//me ne basta una
                         {
@@ -170,10 +170,10 @@ namespace AB.Manager.Button
 
         ///////////////////////////////////////PARTE NUOVA******************************************
 
-        public void ButtonAction(FSMAction action, FSMTransition transition, GameObject obj)
+        public void ButtonAction(FSMInput action, FSMTransition transition, GameObject obj)
         {
             //chiamo il metodo passandogli l'azione, la transizione, l'oggetto target
-            var t = action.Target.Split(':');
+            var t = action.InputTarget.Split(':');
             var tar = t[0];
             var excluded = t.Length > 1 ? t[1] : null;
 
@@ -184,7 +184,7 @@ namespace AB.Manager.Button
             }
             else //se il target è un oggetto qualsiasi
             {
-                if (obj.name == action.Target) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
+                if (obj.name == action.InputTarget) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
                 {
                     action.Triggered = true;
                 }
@@ -203,7 +203,7 @@ namespace AB.Manager.Button
         /// <param name="transition"></param>
         /// <param name="action"></param>
         /// <param name="objId"></param>
-        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+        public void TargetSetting(FSMTransition transition, FSMInput action, GameObject obj, string target, string excluded)
         {
             string objId = obj.name;
 

@@ -78,9 +78,9 @@ namespace AB.Controller.Hand
 
         }
 
-        public void CollisionAction(FSMAction action, FSMTransition transition, GameObject obj)
+        public void CollisionAction(FSMInput action, FSMTransition transition, GameObject obj)
         {
-            var t = action.Target.Split(':');
+            var t = action.InputTarget.Split(':');
             var tar = t[0];
             var excluded = t.Length > 1 ? t[1] : null;
 
@@ -91,7 +91,7 @@ namespace AB.Controller.Hand
             }
             else //se il target è un oggetto qualsiasi
             {
-                if (obj.name == action.Target) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
+                if (obj.name == action.InputTarget) //entro nell'if solo se l'oggetto chiamante la funzione è il target dell'azione voluta
                 {
                     action.Triggered = true;
                 }
@@ -108,7 +108,7 @@ namespace AB.Controller.Hand
         /// <param name="transition"></param>
         /// <param name="action"></param>
         /// <param name="objId"></param>
-        public void TargetSetting(FSMTransition transition, FSMAction action, GameObject obj, string target, string excluded)
+        public void TargetSetting(FSMTransition transition, FSMInput action, GameObject obj, string target, string excluded)
         {
             dictionaryOfElement3D[obj] = true; //diventa vero quando tocco un oggetto
 
